@@ -23,6 +23,7 @@
     <p>お名前を入力して参加ボタンを押してください。</p>
     
     <input type="text" id="userName" placeholder="お名前を入力">
+    <input type="text" id="userAddress" placeholder="住所を入力">
     <button onclick="checkRegistration()">参加登録をする</button>
 
     <div id="result"></div>
@@ -32,6 +33,7 @@
     function checkRegistration() {
         // 1. 変数：入力された値を取得
         const name = document.getElementById('userName').value;
+        const address = document.getElementById('userAddress').value;
         const resultDiv = document.getElementById('result');
         
         // 2. 条件分岐：名前が空かどうかの判定
@@ -42,10 +44,15 @@
         } else {
             resultDiv.style.display = "block";
             resultDiv.className = "success";
-            resultDiv.innerHTML = "ようこそ、" + name + " さん！<br>ランチ交流会への仮登録が完了しました。";
+            // 住所は任意（空でもよい）。入力がある場合はメッセージに含める
+            let message = "ようこそ、" + name + " さん！<br>ランチ交流会への仮登録が完了しました。";
+            if (address.trim() !== "") {
+                message += "<br>ご住所: " + address;
+            }
+            resultDiv.innerHTML = message;
             
             // 社長向けの解説用：本来はここでデータベースに保存する
-            console.log("DB保存対象データ: " + name);
+            console.log("DB保存対象データ: ", { name: name, address: address });
         }
     }
 </script>
