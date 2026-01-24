@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSC Coffee - Advance Order</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f8f5f2;
+      padding: 20px;
+      color: #4e342e;
+    }
+
+    .order-card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 450px;
+      margin: auto;
+    }
+
+    h1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      color: #6d4c41;
+      border-bottom: 2px solid #d7ccc8;
+      padding-bottom: 10px;
+    }
+
+    .logo {
+      width: 35px;
+      height: 35px;
+    }
+
+    /* 店舗選択エリアのスタイルを強化 */
+    .section select {
+      width: 100%;
+      /* 横幅いっぱい */
+      padding: 12px 15px;
+      /* 上下左右にゆとりを持たせる */
+      font-size: 1rem;
+      /* 文字を大きくして読みやすく */
+      border: 1px solid #d7ccc8;
+      border-radius: 8px;
+      /* 少し丸みをつけて柔らかい印象に */
+      background-color: #fff;
+      color: #4e342e;
+
+      /* ブラウザ標準の見た目をリセットしてカスタムしやすくする */
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      /* 下向き矢印を自作（背景画像として入れる） */
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236d4c41' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      /* 右端から15pxの位置に配置 */
+      background-size: 18px;
+
+      cursor: pointer;
+    }
+
+    /* タップした時に枠線が光るようにする（ユーザーへのフィードバック） */
+    .section select:focus {
+      outline: none;
+      border-color: #6d4c41;
+      box-shadow: 0 0 0 2px rgba(109, 76, 65, 0.2);
+    }
+
+    /* セクション内の入力のスタイルを強化 */
+    .section>.input-item {
+      width: 100%;
+      /* 横幅いっぱい */
+      padding: 12px;
+      /* 上下左右にゆとりを持たせる */
+      font-size: 1rem;
+      /* 文字を大きくして読みやすく */
+      border: 1px solid #d7ccc8;
+      border-radius: 8px;
+      /* 少し丸みをつけて柔らかい印象に */
+      background-color: #fff;
+      color: #4e342e;
+      box-sizing: border-box;
+    }
+
+
+    .menu-divider {
+      /* 枠線の色を変える方法 */
+      border: none;
+      /* 一度デフォルトの線を消す */
+      border-bottom: 1px solid #eee;
+    }
+
+    /* 各セクションの境目 */
+    .section {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    label.title {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: #8d6e63;
+    }
+
+    /* 商品画像選択のスタイル */
+    .image-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .image-item {
+      position: relative;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .image-item input {
+      display: none;
+    }
+
+    /* 本物のチェックボタンは隠す */
+    .image-item img {
+      width: 100%;
+      border-radius: 10px;
+      border: 3px solid transparent;
+      transition: 0.3s;
+    }
+
+    .image-item input:checked+img {
+      border-color: darkorange;
+      background-color: #efebe9;
+    }
+
+    .item-name {
+      font-size: 0.8rem;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* カスタマイズのスタイル */
+    .custom-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .custom-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    /* 購入明細 */
+    #buyDetail {
+      font-size: 1rem;
+      font-weight: bold;
+      text-align: left;
+      padding-left: 1rem;
+    }
+
+    /* 購入明細の中の p 要素 */
+    #buyDetail>p {
+      margin: 0.2rem;
+    }
+
+    /* 合計金額 */
+    .total-price {
+      font-size: 1.5rem;
+      text-align: center;
+      margin: 20px 0;
+      color: #bf360c;
+      font-weight: bold;
+    }
+
+    /* クリアーボタン */
+    .button-clear {
+      width: 100%;
+      background: none;
+      color: #888;
+      font-size: 1rem;
+      text-decoration: underline;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 確定ボタン */
+    .button-order {
+      width: 100%;
+      padding: 15px;
+      background-color: #6d4c41;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    /* モーダル用）画面全体を覆う背景 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      /* 半透明の黒 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    /* モーダル用）中央の白いカード */
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 80%;
+      max-width: 350px;
+      /* ふわっと出すアニメーション */
+      animation: fadeIn 0.3s;
+    }
+
+    /* モーダル用）ボタン */
+    .modal-content button {
+      margin-top: 20px;
+      background-color: #6d4c41;
+    }
+
+    /* エラー時のヘッダー色 */
+    .modal-content.error-mode h2 {
+      color: #d32f2f;
+      /* 警告の赤 */
+    }
+
+    /* エラー時のボタン色 */
+    .modal-content.error-mode button {
+      background-color: #d32f2f;
+    }
+
+    /* モーダル用）アニメーション */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* フォームの未入力箇所を赤枠にする */
+    .invalid-input {
+      border: 2px solid #d32f2f !important;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="order-card">
+    <h1>
+      <img src="./img/coffee-1.png" alt="Logo" class="logo">
+      CSC Coffee Order
+    </h1>
+
+    <div class="section">
+      <label class="title">受け取り店舗</label>
+      <select id="shopSelect">
+        <option value="安倍川駅前店">安倍川駅前店</option>
+        <option value="静岡駅前店">静岡駅前店</option>
+        <option value="静岡大学・大谷キャンパス前店">静岡大学・大谷キャンパス前店</option>
+      </select>
+      <label class='title' style='margin-top: 15px;'>ニックネーム（呼び出し名）</label>
+      <input type='text' id='customerName' class='input-item' placeholder='例：コーヒー大好き'>
+    </div>
+
+    <div class="section">
+      <label class="title">メニューを選択</label>
+
+      <h4>季節のおすすめ</h4>
+
+      <div class="image-grid">
+
+        <label class="image-item">
+          <!-- type=radio（ラジオ）は、name が同じものを同一のグループとする -->
+          <input type="radio" name="drink" value="580" data-name="ホワイトモカ・フラペペチーノ" onclick="calculateTotal()">
+          <!-- 無料の写真素材をみつける -->
+          <!-- https://unsplash.com/ja/ -->
+          <!-- 無料写真ID : photo_* -->
+          <!-- サイズ : w , h ,fit=crop 切り取りサイズに丁度良く調整 -->
+          <!-- 切り取り位置 : crop=left 左位置, crop=left ,right ,center ,top ,bottom ,entropy（濃度の高いところ by AI） -->
+          <img src="https://images.unsplash.com/photo-1637178035222-a08f2d4dd1a3?w=200&h=200&fit=crop&crop=center"
+            alt="wflappe">
+          <span class="item-name">ホワイトモカ・フラペペチーノ (¥580)</span>
+        </label>
+
+        <label class="image-item">
+          <input type="radio" name="food" value="380" data-name="チョコとナッツのスコーン" onclick="calculateTotal()">
+          <img src="https://images.unsplash.com/photo-1593954134618-5f29b4bd5433?w=200&h=200&fit=crop&crop=bottom"
+            alt="scone">
+          <span class="item-name">チョコとナッツのスコーン (¥380)</span>
+        </label>
+
+      </div>
+
+      <hr class="menu-divider">
+
+      <h4>コーヒー</h4>
+
+      <div class="image-grid">
+
+        <label class="image-item">
+          <input type="radio" name="drink" value="450" data-name="ブレンド" onclick="calculateTotal()">
+          <img src="https://images.unsplash.com/photo-1524060545405-b99eebf362ac?w=200&h=200&fit=crop&crop=left"
+            alt="Coffee">
+          <span class="item-name">ブレンド(¥450)</span>
+        </label>
+
+        <label class="image-item">
+          <input type="radio" name="drink" value="520" data-name="カフェラテ" onclick="calculateTotal()">
+          <img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200&h=200&fit=crop" alt="Latte">
+          <span class="item-name">カフェラテ (¥520)</span>
+        </label>
+
+      </div>
+
+    </div>
+
+    <div class="section">
+      <button type="button" class="button-clear" onclick="resetOrder()">
+        選んだ注文をクリアする
+      </button>
+    </div>
+
+    <div class="section">
+      <label class="title">サイズ</label>
+      <input type="radio" name="size" value="0" onclick="calculateTotal()"> S (+¥0)
+      <input type="radio" name="size" value="50" onclick="calculateTotal()"> M (+¥50)
+      <input type="radio" name="size" value="100" onclick="calculateTotal()"> L (+¥100)
+    </div>
+
+    <!-- //todo ホット／アイスの選択を追加 -->
+
+    <div class="section">
+      <label class="title">カスタマイズ</label>
+      <div class="custom-group">
+        <label class="custom-item">
+          <span><input type="checkbox" name="custom" value="50" onclick="calculateTotal()"> ホイップ追加</span>
+          <span>+¥50</span>
+        </label>
+        <label class="custom-item">
+          <span><input type="checkbox" name="custom" value="80" onclick="calculateTotal()"> チョコソース</span>
+          <span>+¥80</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="total-price">
+      合計: ¥<span id="totalDisplay">0</span><span style="font-size: 0.8rem;">（※税込み）</span>
+    </div>
+
+    <button class="button-order" onclick="placeOrder()">☕選んだ注文を確定する</button>
+
+    <!-- 選んだ飲み物と食べ物 -->
+    <div class="section">
+      <div id="buyDetail"></div>
+    </div>
+
+    <div id="orderModal" class="modal-overlay" style="display: none;">
+      <div class="modal-content">
+        <h2>ご注文ありがとうございます！</h2>
+        <div id="modalDetails"></div>
+        <button class="button-order" onclick="closeModal()">閉じる</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    var orderNo = 0;
+    /**
+     * 合計金額の計算処理
+    **/
+    function calculateTotal() {
+
+      let total = 0;    //合計金額
+
+      // 購入明細
+      const buyDetailObj = document.getElementById('buyDetail');
+      buyDetailObj.innerHTML = '';
+
+      // 選ばれたコーヒーを取得
+      // document.querySelector ＝ ドキュメント（ページ）から、任意の条件でオブジェクト最初の一つだけを取得するメソッド（関数）
+      // input タグの name属性="drink" で、チェック（選択されている）オブジェクトを取得する
+      const selectedDrink = document.querySelector('input[name="drink"]:checked');
+
+      let price = 0;
+      // 取得できたなら”真”（取得できないと値が空っぽになり、”偽”と判定される）
+      if (selectedDrink) {
+        // 取得した `value` 全て文字列扱いとなるため、整数への変換をする。変換をパースという
+        price = parseInt(selectedDrink.value);
+        // 購入明細に表示
+        buyDetailObj.innerHTML = buyDetailObj.innerHTML
+          + '<p> ドリンク　：　'
+          + selectedDrink.getAttribute('data-name')
+          + ' ( ¥'
+          + price.toLocaleString()
+          + ' )'
+          + '</p>'
+
+        total += price;
+      }
+
+      // 選ばれたフードを取得
+      const selectedFood = document.querySelector('input[name="food"]:checked');
+      if (selectedFood) {
+        price = parseInt(selectedFood.value);
+
+        // 購入明細に表示
+        buyDetailObj.innerHTML = buyDetailObj.innerHTML
+          + '<p> フード　　：　'
+          + selectedFood.getAttribute('data-name')
+          + ' ( ¥'
+          + price.toLocaleString()
+          + ' )'
+          + '</p>'
+
+        total += price;
+      }
+
+      // サイズの選択
+      const selectedSize = document.querySelector('input[name="size"]:checked');
+      if (selectedSize) {
+        // ドリンクが選ばれていたらサイズ料金を加える
+        if (selectedDrink) {
+          total += parseInt(selectedSize.value);
+          // ドリンクが選ばれていないならサイズの選択を解除する
+        } else {
+          selectedSize.checked = false
+        }
+      }
+
+      // カスタマイズの合計
+      // document.querySelectorAll ＝ ドキュメント（ページ）から、任意の条件でオブジェクト全てを取得するメソッド（関数）
+      const customs = document.querySelectorAll('input[name="custom"]:checked');
+
+      // for 取得したリストを要素一つずつ繰り返す
+      // customs から1つ取り出したのが const custom
+      for (const custom of customs) {
+        // ドリンクが選ばれていたらカスタマイズ料金を加える
+        if (selectedDrink) {
+          total += parseInt(custom.value);
+          // ドリンクが選ばれていないならカスタマイズの選択を解除する
+        } else {
+          custom.checked = false
+        }
+      }
+
+      // 金額をカンマ区切りにする
+      document.getElementById('totalDisplay').innerText = total.toLocaleString();
+
+    }
+
+    /**
+     *  注文をリセットする処理
+    **/
+    function resetOrder() {
+
+      // name属性でオブジェクトを取得する（リストの状態で取得する）リスト＝配列
+      const drinks = document.getElementsByName('drink');
+      for (const drink of drinks) {
+        drink.checked = false;
+      }
+
+      const foods = document.getElementsByName('food');
+      for (const food of foods) {
+        food.checked = false;
+      }
+
+      const sizes = document.getElementsByName('size');
+      for (const size of sizes) {
+        size.checked = false;
+      }
+
+      const customs = document.getElementsByName('custom');
+      for (const custom of customs) {
+        custom.checked = false;
+      }
+
+      document.getElementById('customerName').value = '';                     // 顧客名
+
+      // 合計金額を再計算（0円に更新するために呼ぶ）
+      calculateTotal();
+
+      // 入力エラーを解除する
+      const inputCustomer = document.getElementById('customerName');                 // ニックネーム
+      inputCustomer.classList.remove('invalid-input');
+
+    }
+
+    /**
+      注文を確定する
+    **/
+    function placeOrder() {
+
+      const shop = document.getElementById('shopSelect').value;                     // 店舗
+      const inputCustomer = document.getElementById('customerName');                // ニックネーム
+      const selectedDrink = document.querySelector('input[name="drink"]:checked');  // ドリンク
+      const selectedSize = document.querySelector('input[name="size"]:checked');    // サイズ
+      const selectedFood = document.querySelector('input[name="food"]:checked');    // フード
+      const total = document.getElementById('totalDisplay').innerText;              // 合計金額
+
+      // モーダルのオブジェクトを取得する
+      const modal = document.getElementById('orderModal');
+      const modalContent = modal.querySelector('.modal-content');
+      const modalTitle = modal.querySelector('h2');
+      const modalDetails = document.getElementById('modalDetails');
+
+      // モーダルを表示する
+      modal.style.display = 'flex';
+
+      // モーダル詳細のテキストをクリアーする
+      modalDetails.innerHTML = '';
+
+      // 入力エラーを解除する
+      inputCustomer.classList.remove('invalid-input');
+
+      //=================================================================
+      // --- 異常系 ---
+      //=================================================================
+      // ニックネームを入力していないとき
+      const customerName = inputCustomer.value.trim();
+      if (customerName === '') {
+        modalContent.classList.add('error-mode');
+        modalTitle.innerText = 'ご注文エラー';
+        modalDetails.innerHTML = '<p>ニックネーム（呼び出し名）を入れて下さい。</p>';
+        inputCustomer.classList.add('invalid-input');
+        inputCustomer.focus();  // フォーカスする
+        return;
+      }
+
+      // 何も選んでいないとき
+      if (!selectedDrink && !selectedFood) {
+        modalContent.classList.add('error-mode');   // 既に同名クラスがいても追加エラーにはならない
+        modalTitle.innerText = 'ご注文エラー';
+        modalDetails.innerHTML = '<p>商品が選択されていません。<br>お好きなドリンクやフードを選んでくださいね。</p>';
+        return;
+      }
+
+      // ドリンクは選ばれているがサイズが選ばれていない場合
+      if (selectedDrink && !selectedSize) {
+        modalContent.classList.add('error-mode');
+        modalTitle.innerText = 'ご注文エラー';
+        modalDetails.innerHTML = '<p>ドリンクのサイズをお選び下さい。</p>';
+        return;
+      }
+
+      //=================================================================
+      // --- 正常系（注文確定） ---
+      //=================================================================
+      // エラーの表示クラスを除去する
+      modalContent.classList.remove('error-mode');
+      modalTitle.innerText = 'ご注文ありがとうございます！';
+
+      // 注文番号
+      orderNo = Date.now();
+
+      // ` ← バッククォートで中に、変数／定数を  ${変数名} の形式で記述すると展開（中の値が出てくる）される
+      modalDetails.innerHTML += `<h4 style="font-size: 1.2rem; font-weight: bold;">オーダー№：${orderNo}</h4>`
+      modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">ニックネーム：${customerName}</p>`
+      modalDetails.innerHTML += `<p style="font-size: 1rem; font-weight: bold;">受取：${shop}</p>`
+
+      // ドリンクとフード名取得
+      let drink = '';
+      let food = '';
+
+      if (selectedDrink) {
+        drink = selectedDrink.getAttribute('data-name');
+        modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">ドリンク：${drink}</p>`
+      }
+
+      if (selectedFood) {
+        food = selectedFood.getAttribute('data-name');
+        modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">フード：${food}</p>`
+      }
+
+      modalDetails.innerHTML += `<p style="color: #bf360c; font-size: 1.5rem;">合計：¥${total}</p>`;
+
+      // のログ出力
+      console.log("受注確定:", { shop, drink, food, total });
+
+    }
+
+    /**
+     * モーダルを閉じる
+    **/
+    function closeModal() {
+      document.getElementById('orderModal').style.display = 'none';
+
+      // 注文確定した場合は画面をリセットする
+      if (orderNo !== 0) {
+        resetOrder();
+        orderNo = 0;
+      }
+
+    }
+  </script>
+
+</body>
+
+</html>
