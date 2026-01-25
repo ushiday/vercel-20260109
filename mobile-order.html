@@ -342,6 +342,8 @@
 
     </div>
 
+    <!-- //todo ドリンク、フードは一度選ぶと”クリアーでしか”解除ができない -->
+
     <div class="section">
       <button type="button" class="button-clear" onclick="resetOrder()">
         選んだ注文をクリアする
@@ -350,9 +352,9 @@
 
     <div class="section">
       <label class="title">サイズ</label>
-      <input type="radio" name="size" value="0" onclick="calculateTotal()"> S (+¥0)
-      <input type="radio" name="size" value="50" onclick="calculateTotal()"> M (+¥50)
-      <input type="radio" name="size" value="100" onclick="calculateTotal()"> L (+¥100)
+      <input type="radio" name="size" data-name="S" value="0" onclick="calculateTotal()"> S (+¥0)
+      <input type="radio" name="size" data-name="M" value="50" onclick="calculateTotal()"> M (+¥50)
+      <input type="radio" name="size" data-name="L" value="100" onclick="calculateTotal()"> L (+¥100)
     </div>
 
     <!-- //todo ホット／アイスの選択を追加 -->
@@ -361,11 +363,13 @@
       <label class="title">カスタマイズ</label>
       <div class="custom-group">
         <label class="custom-item">
-          <span><input type="checkbox" name="custom" value="50" onclick="calculateTotal()"> ホイップ追加</span>
+          <span><input type="checkbox" name="custom" value="50" data-name="カスタムマイズ（ホイップ追加）" onclick="calculateTotal()">
+            ホイップ追加</span>
           <span>+¥50</span>
         </label>
         <label class="custom-item">
-          <span><input type="checkbox" name="custom" value="80" onclick="calculateTotal()"> チョコソース</span>
+          <span><input type="checkbox" name="custom" value="80" data-name="カスタムマイズ（チョコソース）" onclick="calculateTotal()">
+            チョコソース</span>
           <span>+¥80</span>
         </label>
       </div>
@@ -382,6 +386,8 @@
       <div id="buyDetail"></div>
     </div>
 
+    <!-- //todo 確認画面が欲しい -->
+
     <div id="orderModal" class="modal-overlay" style="display: none;">
       <div class="modal-content">
         <h2>ご注文ありがとうございます！</h2>
@@ -391,6 +397,12 @@
     </div>
 
   </div>
+
+  <!-- //todo 追加要件 -->
+  <!-- //todo お客様が注文を内容を再度確認する画面 -->
+  <!-- //todo お客様が注文まで何分掛かるか？ -->
+  <!-- //todo お客様が注文を取り消せる -->
+  <!-- //todo お客様が注文出来上がりを知らせる -->
 
   <script>
     var orderNo = 0;
@@ -588,22 +600,79 @@
 
       // ドリンクとフード名取得
       let drink = '';
+      let size = '';
+      let custmizeList = [];
       let food = '';
 
+      // ドリンクのオーダーあり
       if (selectedDrink) {
         drink = selectedDrink.getAttribute('data-name');
-        modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">ドリンク：${drink}</p>`
+        size = selectedSize.getAttribute('data-name');
+        modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">ドリンク：${drink} (${size})</p>`
+
+        //ドリンクのカスタマイズ
+        const customs = document.querySelectorAll('input[name="custom"]:checked');
+
+        for (const custom of customs) {
+          const custmize = custom.getAttribute('data-name');
+          custmizeList.push(custmize);
+          modalDetails.innerHTML += `<p style="font-size: 0.8rem;;"> - ${custmize} </p>`
+        }
+
       }
 
+      // フードのオーダーあり
       if (selectedFood) {
         food = selectedFood.getAttribute('data-name');
         modalDetails.innerHTML += `<p style="font-size: 1.2rem; font-weight: bold;">フード：${food}</p>`
       }
 
+
       modalDetails.innerHTML += `<p style="color: #bf360c; font-size: 1.5rem;">合計：¥${total}</p>`;
 
-      // のログ出力
-      console.log("受注確定:", { shop, drink, food, total });
+      // 個別の情報をオブジェクト化（レコード／行）単位にする
+      // ①”{”…オブジェクトの始まり
+      // ②”}”…オブジェクトの終わり
+      // ③”shop:”…項目の名前
+      // ④”shop,”…項目にセットしたい値。この場合は”shop”という変数
+      // ⑤”③と④変数名”が同じ場合に限り、③を省略して記述する事も出来る
+      const orderData = {
+        orderNo: orderNo,
+        customerName: customerName,
+        shop: shop,
+        drink: drink,
+        size: size,
+        custmizeList: custmizeList,
+        food: food,
+        total: total,
+      };
+
+      // データベースへ保存処理へ
+      registDataBase(orderData);
+
+      //↓でも↑と同じ意味
+      // const orderData = {
+      //   orderNo,
+      //   customerName,
+      //   shop,
+      //   drink,
+      //   size,
+      //   custmizeList,
+      //   food,
+      //   total
+      // };
+      // registDataBase(orderData);
+
+      // registDataBase({
+      //   orderNo,
+      //   customerName,
+      //   shop,
+      //   drink,
+      //   size,
+      //   custmizeList,
+      //   food,
+      //   total
+      // });
 
     }
 
@@ -620,6 +689,44 @@
       }
 
     }
+
+    /**
+     * データベースへ登録
+     **/
+    function registDataBase(orderData) {
+
+      // localStorage … ローカルストレージ（ブラウザ内にWebオリジン毎「例：http://127.0.0.1:5500」保存されるデータ）
+      // getItem … ローカルストレージ内を任意の名前で保存した文字列データを取得する
+      // setItem … ローカルストレージ内に任意の名前で文字列データを保存する
+
+      // 1. すでに保存されているオーダーリストを取得する（なければ空の配列 [] を作成）
+      const orderListJson = localStorage.getItem('orderList');
+
+      let orderList = [];
+
+      // オーダーリストが既に存在したら、文字列をJavaScriptで使えるリスト形式（配列）に変換する
+      if (orderListJson) {
+        orderList = JSON.parse(orderListJson)
+      }
+
+      // 2. 新しい注文をオーダーリストに追加する
+      orderList.push(orderData);
+
+      // 3. オーダーリストをJSON形式の文字列に変換して保存する
+      localStorage.setItem('orderList', JSON.stringify(orderList));
+
+      // console.log('受注確定：LocalStorageに保存しました:', orderData);
+
+      // 保存した配列の中から任意の orderNo を探す”find”処理
+      const newOrderData = orderList.find(function (row) {
+        return row.orderNo === orderData.orderNo;
+      });
+
+      // 確認用のログ出力
+      console.log('新規受注確定：LocalStorageに保存しました:', newOrderData);
+
+    }
+
   </script>
 
 </body>
