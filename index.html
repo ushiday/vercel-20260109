@@ -301,9 +301,11 @@
 
       // ラジオボタンの取得
       const radios = document.getElementsByName('party');
+      let valueParty;
 
       for (const radio of radios) {
         if (radio.checked === true) {
+          valueParty = radio.value;
           message += "<br>懇親会の参加：" + radio.value;
         }
       }
@@ -319,7 +321,6 @@
       for (const checkbox of checkboxes) {
         if (checkbox.checked === true) {
           if (interests === '') {
-            interests = '<br>興味：';
             interests += checkbox.value;
           } else {
             interests += ' ,' + checkbox.value;
@@ -327,29 +328,86 @@
         }
       }
 
-      message += interests;
+      if (interests !== '') {
+        message += '<br>興味：';
+        message += interests;
+      }
 
-      if (valueAddress.trim() !== "") {
+      if (valueAddress !== "") {
         message += "<br>ご住所：" + valueAddress;
       }
 
       // ひとこと
       const valueMessage = document.getElementById('userMessage').value;
-      if (valueMessage.trim() !== "") {
+      if (valueMessage !== "") {
         message += "<br>ひとこと：" + valueMessage;
       }
 
-
       resultDiv.innerHTML = message;
 
-      // DB保存を想定したログ出力
+      /****************************************************
+       * --- ここからLocalStorage保存処理 ---
+       ***************************************************/
+      // 三項演算子 … Ａ（条件） ? Ｂ（真） : Ｃ（偽）
+      // split 文字列を”特定の区切り文字（ ,）” でバラバラにして配列化するメソッド（関数）
+      const arrayInterests = interests ? interests.split(' ,') : [];
+
+      /*** ↓↑ は同じ意味
+      let arrayInterests;
+      if (interests !== "") {
+        arrayInterests = interests.split(' ,');
+      }else{
+        arrayInterests = [];
+      }
+      ***/
+
+      const userData = {
+        name: valueName,
+        email: valueEmail,
+        university: valueUniversity,
+        department: valueDepartment,
+        grade: valueGrade,
+        interests: arrayInterests,
+        address: valueAddress,
+        message: valueMessage,
+        party: valueParty,
+        updatedAt: new Date().toLocaleString() // 更新日時
+      };
+
+      // 保存実行（ロカールストレージへ）
+      saveToLocalStorage(userData);
+
       console.log("登録データ: ", {
-        valueName, valueEmail, valueUniversity, valueDepartment, valueGrade, interests, valueAddress
+        valueName, valueEmail, valueUniversity, valueDepartment, valueGrade, arrayInterests, valueAddress
       });
 
+      //
       addRegistCount();
     }
 
+    /**
+     * LocalStorageへ保存
+     * キー：メールアドレス
+     **/
+    function saveToLocalStorage(data) {
+
+      // 既に保存されている「名簿オブジェクト」を取得。なければ新しい空のオブジェクト {} を作る
+      const storageKey = 'student_list';
+      const currentListJson = localStorage.getItem(storageKey);
+      let studentList = currentListJson ? JSON.parse(currentListJson) : {};
+
+      // メールアドレスをキーにして、データを追加（または上書き）
+      // 例: studentList["taro@example.jp"] = { name: "山田太郎", ... }
+      studentList[data.email] = data;
+
+      // 文字列に戻して保存
+      localStorage.setItem(storageKey, JSON.stringify(studentList));
+
+    }
+
+    /**
+     * 登録回数のカウント
+     **/
     function addRegistCount() {
       registCount++;
       const registCountDiv = document.getElementById('registCount');
