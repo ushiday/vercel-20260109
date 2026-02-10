@@ -63,17 +63,20 @@
       /* background-color: lightpink; */
     }
 
-    .checkbox-group {
+    .checkbox-group,
+    .checkbox-radio {
       margin: 10px 0;
     }
 
-    .checkbox-group label {
+    .checkbox-group label,
+    .checkbox-radio label {
       display: inline-block;
       margin-right: 15px;
       font-weight: normal;
     }
 
-    .checkbox-group input {
+    .checkbox-group input,
+    .checkbox-radio input {
       width: auto;
       margin-right: 5px;
     }
@@ -153,6 +156,12 @@
       <option value="院生・その他">院生・その他</option>
     </select>
 
+    <label>懇親会への参加有無</label>
+    <div class="checkbox-radio">
+      <label><input type="radio" name="party" value="しない" checked> しない</label>
+      <label><input type="radio" name="party" value="する"> する</label>
+    </div>
+
     <label>興味のあるトピック（任意）</label>
     <div class="checkbox-group">
       <label><input type="checkbox" name="interest" value="プログラミング"> プログラミング</label>
@@ -162,6 +171,10 @@
 
     <label>住所（任意）</label>
     <input type="text" id="userAddress" placeholder="住所を入力">
+
+    <label>ひとこと（任意）</label>
+    <textarea id="userMessage" placeholder="ご意見やメッセージなど"></textarea>
+
 
     <button onclick="checkRegistration()">参加登録をする</button>
 
@@ -286,6 +299,15 @@
       message += "<br>所属：" + valueUniversity + " " + valueDepartment + " (" + valueGrade + ")";
       message += "<br>メール：" + valueEmail;
 
+      // ラジオボタンの取得
+      const radios = document.getElementsByName('party');
+
+      for (const radio of radios) {
+        if (radio.checked === true) {
+          message += "<br>懇親会の参加：" + radio.value;
+        }
+      }
+
       // チェックボックス（複数選択）の取得
       // const interests = [];
       // const checkboxes = document.querySelectorAll('input[name="interest"]:checked');
@@ -310,6 +332,13 @@
       if (valueAddress.trim() !== "") {
         message += "<br>ご住所：" + valueAddress;
       }
+
+      // ひとこと
+      const valueMessage = document.getElementById('userMessage').value;
+      if (valueMessage.trim() !== "") {
+        message += "<br>ひとこと：" + valueMessage;
+      }
+
 
       resultDiv.innerHTML = message;
 
