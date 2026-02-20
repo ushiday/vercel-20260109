@@ -64,19 +64,20 @@
     }
 
     .checkbox-group,
-    .checkbox-radio {
-      margin: 10px 0;
+    .radio-group {
+      margin: 5px 0;
     }
 
     .checkbox-group label,
-    .checkbox-radio label {
+    .radio-group label {
       display: inline-block;
+      margin-top: 0;
       margin-right: 15px;
       font-weight: normal;
     }
 
     .checkbox-group input,
-    .checkbox-radio input {
+    .radio-group input {
       width: auto;
       margin-right: 5px;
     }
@@ -103,6 +104,24 @@
 
     .button_inquiry:hover {
       background-color: #333;
+    }
+
+    .button_delete {
+      background-color: #d468b0;
+    }
+
+    .button_delete:hover {
+      background-color: crimson;
+    }
+
+    /* ボタン使用不可 */
+    .button_diabled {
+      display: none;
+    }
+
+    /* ボタン使用可 */
+    .button_enabled {
+      display: block;
     }
 
     #result {
@@ -133,6 +152,36 @@
     /* .error>p {
       margin: 0;
     } */
+
+    /* 新規 */
+    .regist_new {
+      display: block;
+    }
+
+    /* 修正／削除 */
+    .regist_maint,
+    .regist_delete {
+      display: none;
+    }
+
+    /* 削除入力不可 is で冗長さを回避できる */
+    /* .regist_delete :is(input, select, textarea, .checkbox-group, .radio-group) { */
+    .regist_delete>input,
+    .regist_delete>select,
+    .regist_delete>textarea,
+    .regist_delete>.checkbox-group,
+    .regist_delete>.radio-group {
+      pointer-events: none;
+      color: #333;
+      background-color: #f1ddec;
+      border-width: 0px;
+      box-shadow: none;
+    }
+
+    /* フォームを強制表示 */
+    .form_inq {
+      display: block !important;
+    }
   </style>
 </head>
 
@@ -142,57 +191,135 @@
     <h1>学生交流会 参加登録</h1>
     <p>プロフィールを入力して参加ボタンを押してください。</p>
 
-    <label>お名前（必須）</label>
-    <input type="text" id="userName" placeholder="例：山田 太郎">
+    <label>登録区分</label>
+    <div class="radio-group">
+      <label><input type="radio" name="registClass" value="新規" checked onclick="setRegistForm()"> 新規</label>
+      <label><input type="radio" name="registClass" value="修正" onclick="setRegistForm()"> 修正</label>
+      <label><input type="radio" name="registClass" value="取消" onclick="setRegistForm()"> 取消</label>
+    </div>
 
     <label>メールアドレス（必須）</label>
     <input type="email" id="userEmail" placeholder="例：taro@example.ac.jp">
 
-    <label>大学名（必須）</label>
-    <input type="text" id="userUniversity" placeholder="例：〇〇大学">
+    <div id="registForm">
 
-    <label>学部・学科（必須）</label>
-    <input type="text" id="userDepartment" placeholder="例：工学部 情報工学科">
+      <label>お名前（必須）</label>
+      <input type="text" id="userName" placeholder="例：山田 太郎">
 
-    <label>学年（必須）</label>
-    <select id="userGrade">
-      <option value="">選択してください</option>
-      <option value="1年生">1年生</option>
-      <option value="2年生">2年生</option>
-      <option value="3年生">3年生</option>
-      <option value="4年生">4年生</option>
-      <option value="院生・その他">院生・その他</option>
-    </select>
+      <label>大学名（必須）</label>
+      <input type="text" id="userUniversity" placeholder="例：〇〇大学">
 
-    <label>懇親会への参加有無</label>
-    <div class="checkbox-radio">
-      <label><input type="radio" name="party" value="しない" checked> しない</label>
-      <label><input type="radio" name="party" value="する"> する</label>
+      <label>学部・学科（必須）</label>
+      <input type="text" id="userDepartment" placeholder="例：工学部 情報工学科">
+
+      <label>学年（必須）</label>
+      <select id="userGrade">
+        <option value="">選択してください</option>
+        <option value="1年生">1年生</option>
+        <option value="2年生">2年生</option>
+        <option value="3年生">3年生</option>
+        <option value="4年生">4年生</option>
+        <option value="院生・その他">院生・その他</option>
+      </select>
+
+      <label>懇親会への参加有無</label>
+      <div class="radio-group">
+        <label><input type="radio" name="party" value="しない" checked> しない</label>
+        <label><input type="radio" name="party" value="する"> する</label>
+      </div>
+
+      <label>興味のあるトピック（任意）</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="interest" value="プログラミング"> プログラミング</label>
+        <label><input type="checkbox" name="interest" value="デザイン"> デザイン</label>
+        <label><input type="checkbox" name="interest" value="キャリア・就活"> キャリア・就活</label>
+      </div>
+
+      <label>住所（任意）</label>
+      <input type="text" id="userAddress" placeholder="住所を入力">
+
+      <label>ひとこと（任意）</label>
+      <textarea id="userMessage" placeholder="ご意見やメッセージなど"></textarea>
     </div>
 
-    <label>興味のあるトピック（任意）</label>
-    <div class="checkbox-group">
-      <label><input type="checkbox" name="interest" value="プログラミング"> プログラミング</label>
-      <label><input type="checkbox" name="interest" value="デザイン"> デザイン</label>
-      <label><input type="checkbox" name="interest" value="キャリア・就活"> キャリア・就活</label>
-    </div>
+    <button id="buttonNew" onclick="checkRegistration()">参加登録をする</button>
 
-    <label>住所（任意）</label>
-    <input type="text" id="userAddress" placeholder="住所を入力">
+    <button id="buttonInq" onclick="loadRegistration()" class="button_inquiry">登録内容を呼び出す</button>
 
-    <label>ひとこと（任意）</label>
-    <textarea id="userMessage" placeholder="ご意見やメッセージなど"></textarea>
+    <button id="buttonDel" onclick="deleteRegistration()" class="button_delete">登録を取り消す</button>
 
-
-    <button onclick="checkRegistration()">参加登録をする</button>
-
-    <button onclick="loadRegistration()" class="button_inquiry">登録内容を呼び出す</button>
     <div id="registCount"></div>
     <div id="result"></div>
   </div>
 
   <script>
     var registCount = 0;
+    var valueRegistClass = '';
+
+    /**
+     * windows.onload() ブラウザのＨＴＭＬが整った後に続けて実行される
+     **/
+    window.onload = function () {
+      setRegistForm();
+    }
+
+    /**
+     * フォームの登録区分毎の切り替え
+     **/
+    function setRegistForm() {
+
+      // 登録区分を取得
+      // `querySelector`チェック済みを取得するループさせなくて良い取得方法
+      const elemRegistClass = document.querySelector('input[name="registClass"]:checked');
+      valueRegistClass = elemRegistClass.value;
+
+      // 登録フォーム
+      const newClassName = 'regist_new';
+      const maintClassName = 'regist_maint';
+      const deleteClassName = 'regist_delete';
+      const inqClassName = 'form_inq';
+      const elemRegistForm = document.getElementById('registForm');
+      elemRegistForm.classList.remove(newClassName, maintClassName, deleteClassName, inqClassName);
+
+      // 登録ボタン
+      const elemButtonNew = document.getElementById('buttonNew');
+      const elemButtonInq = document.getElementById('buttonInq');
+      const elemButtonDel = document.getElementById('buttonDel');
+
+      const button_diabledClassName = 'button_diabled';
+      const button_enabledClassName = 'button_enabled';
+      elemButtonNew.classList.remove(button_diabledClassName, button_enabledClassName);
+      elemButtonInq.classList.remove(button_diabledClassName, button_enabledClassName);
+      elemButtonDel.classList.remove(button_diabledClassName, button_enabledClassName);
+
+      // 削除ボタンは使用不可
+      elemButtonDel.classList.add(button_diabledClassName);
+
+      switch (valueRegistClass) {
+        case '新規':
+          elemRegistForm.classList.add(newClassName);
+          elemButtonNew.classList.add(button_enabledClassName);
+          elemButtonInq.classList.add(button_diabledClassName);
+          break;
+        case '修正':
+          elemRegistForm.classList.add(maintClassName);
+          elemButtonNew.classList.add(button_diabledClassName);
+          elemButtonInq.classList.add(button_enabledClassName);
+          break;
+        default:
+          elemRegistForm.classList.add(deleteClassName);
+          elemButtonNew.classList.add(button_diabledClassName);
+          elemButtonInq.classList.add(button_enabledClassName);
+          break;
+      }
+
+      // 結果表示を初期化
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = "";
+      resultDiv.className = "";
+
+    }
 
     /**
      * 参加登録処理
@@ -390,8 +517,8 @@
         valueName, valueEmail, valueUniversity, valueDepartment, valueGrade, arrayInterests, valueAddress
       });
 
-      //
       addRegistCount();
+
     }
 
     /**
@@ -418,8 +545,11 @@
      * 登録済みデータをメールアドレスで検索して再セットする
      **/
     function loadRegistration() {
+
       // ポップアップでメールアドレスを入力してもらう
-      const searchEmail = window.prompt('登録済みのメールアドレスを入力してください');
+      // const searchEmail = window.prompt('登録済みのメールアドレスを入力してください');
+
+      const searchEmail = document.getElementById('userEmail').value.trim();
 
       // キャンセルされた、または空欄の場合は何もしない
       if (!searchEmail) return;
@@ -477,15 +607,138 @@
 
       }
 
-      alert(userData.name + 'さんのデータを読み込みました。内容を修正して再登録も可能です。');
+      alert('「' + userData.name + '」さんのデータを読み込みました。');
+
+      // フォームを再設定
+      const inqClassName = 'form_inq';
+      const elemRegistForm = document.getElementById('registForm');
+      elemRegistForm.classList.add(inqClassName);
+
+      // ボタンを再設定
+      const elemButtonNew = document.getElementById('buttonNew');
+      const elemButtonInq = document.getElementById('buttonInq');
+      const elemButtonDel = document.getElementById('buttonDel');
+
+      const button_diabledClassName = 'button_diabled';
+      const button_enabledClassName = 'button_enabled';
+
+      elemButtonNew.classList.remove(button_diabledClassName, button_enabledClassName);
+      elemButtonInq.classList.remove(button_diabledClassName, button_enabledClassName);
+      elemButtonDel.classList.remove(button_diabledClassName, button_enabledClassName);
+
+      // 照会ボタンは使用不可
+      elemButtonInq.classList.add(button_diabledClassName);
+
+      // 変更処理
+      if (valueRegistClass === '修正') {
+        elemButtonNew.classList.add(button_enabledClassName);
+        elemButtonDel.classList.add(button_diabledClassName);
+        // 削除処理
+      } else {
+        elemButtonNew.classList.add(button_diabledClassName);
+        elemButtonDel.classList.add(button_enabledClassName);
+      }
 
     }
+
+    /**
+     * 参加取消処理
+     **/
+    function deleteRegistration() {
+
+      // バリデーションスタイルのクラス名
+      const errClassName = 'error';
+      const successClassName = 'success';
+
+
+      // 結果表示を初期化
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = "";
+      resultDiv.className = "";
+
+      // Emailを取得
+      const elemEmail = document.getElementById('userEmail');
+      const valueEmail = elemEmail.value.trim();
+
+      // 取消実行（ロカールストレージへ）
+      const deleteResult = deleteFromLocalStorage(valueEmail);
+
+      // フォーム表示をリセット
+      setRegistForm();
+
+      // 削除の結果を表示
+      if (deleteResult.error === true) {
+        resultDiv.className = errClassName;
+      } else {
+        resultDiv.className = successClassName;
+      }
+
+      resultDiv.innerHTML = deleteResult.message;
+
+      addRegistCount();
+
+    }
+
+    /**
+     * LocalStorageより削除
+     * キー：メールアドレス
+     **/
+    function deleteFromLocalStorage(email) {
+
+      // 削除した結果
+      let result = {
+        error: false,   // true=エラーあり
+        message: '',    // メッセージ
+      }
+
+      // 既に保存されている「名簿オブジェクト」を取得。なければ新しい空のオブジェクト {} を作る
+      const storageKey = 'student_list';
+      const currentListJson = localStorage.getItem(storageKey);
+      if (!currentListJson) {
+        result.error = true;
+        result.message = 'メールアドレスが登録されていません。'
+        return result;
+      }
+
+      let studentList = JSON.parse(currentListJson);
+
+      // 入力されたメールアドレスでデータを検索
+      const userData = studentList[email];
+
+      if (!userData) {
+        result.error = true;
+        result.message = 'メールアドレスが登録されていません。'
+        return result;
+      }
+
+      // メールアドレスのキーを削除する
+      delete studentList[email];
+
+      // 文字列に戻して保存
+      localStorage.setItem(storageKey, JSON.stringify(studentList));
+
+      result.message = '登録を削除しました'
+
+      return result;
+
+    }
+
 
     /**
      * 登録回数のカウント
      **/
     function addRegistCount() {
-      registCount++;
+
+      switch (valueRegistClass) {
+        case '新規':
+          registCount++;
+          break;
+        case '取消':
+          registCount--;
+          break;
+      }
+
       const registCountDiv = document.getElementById('registCount');
       registCountDiv.innerHTML = "現在の登録者数：「" + registCount + "」人です";
     }
