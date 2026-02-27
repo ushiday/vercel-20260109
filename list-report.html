@@ -36,6 +36,17 @@
       font-size: 0.9rem;
     }
 
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
     button {
       width: 100%;
       padding: 12px;
@@ -80,6 +91,27 @@
     /* .error>p {
       margin: 0;
     } */
+
+    /*--------------------------------------------------------------------------------------------
+     * 日付入力用のボックススタイル
+     * display の体系的考え方
+     *  - block （フロア）  :横幅いっぱいを占領し、次の要素は必ず改行される(div,h1,etc...)
+     *  - inline（人や物）:文章の一部のように並び、幅（width）や高さ（height）が効かない（span, a,etc,,
+     *  - inline-block（部屋）:文章の一部のように並び、幅（width）や高さ（height）が効かない（span, a,etc,,
+     *  - flex（自由な設定）:本来 block 要素の<div>,<h1>などでも `gap`,`justify-content` ,`align-items` で自由に設定できる
+     *    + gap：行,列の間隔
+     *    + justify-content：主軸（横方向）の揃え方
+     *    + align-items：交差軸（縦方向）の揃え方
+     *  - glid（行列の設定）:本来 block 要素の<div>,<h1>などでも行列に並べる
+     *    + gap：行,列の間隔
+     *    + justify-content：主軸（横方向）の揃え方
+     *    + align-items：交差軸（縦方向）の揃え方
+    --------------------------------------------------------------------------------------------*/
+    .date-flex-box {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
   </style>
 
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js'></script>
@@ -93,6 +125,11 @@
   <div class="card">
     <h1>企業向け・学生交流会 参加登録 報告リスト</h1>
     <p>参加者の報告リストを発行します。</p>
+
+    <label>発行対象期間（登録日時）</label>
+    <div class="date-flex-box">
+      <input type="date" id="dateStart"> ～ <input type="date" id="dateEnd">
+    </div>
 
     <button onclick="printReport()">報告リストを発行する</button>
 
@@ -122,6 +159,14 @@
      *  - https://simonbengtsson.github.io/jsPDF-AutoTable/
      **/
     function printReport() {
+
+      // 入力された日付（文字列）を取得
+      const dateStart = document.getElementById('dateStart').value;
+      const dateEnd = document.getElementById('dateEnd').value;
+
+      console.log('日付範囲', dateStart, dateEnd);
+
+      //TODO 日付チェック
 
       // バリデーションスタイルのクラス名
       const errClassName = 'error';
@@ -174,6 +219,28 @@
       const students = Object.values(studentList);
       const tableBody = [];
       for (student of students) {
+
+        // 学生の登録日時（文字列）を「日付オブジェクト」に変換して、日付部分だけ取り出す
+        // 例: "2026/1/13 15:00:00" -> "2026-01-13" (比較しやすい形式)
+        const updateAtDate = new Date(student.updatedAt);
+        const updateAtString = updateAtDate.toISOString();
+        const updateAtArray = updateAtString.split('T');
+        const updateAt = updateAtArray[0];
+
+        // ↑これをワンライナー（１行）で書くと
+        // const updateAt = new Date(student.updatedAt).toISOString().split('T')[0];
+
+        // 日付範囲の判定
+        // 開始日が入力されていて、それより前なら除外
+        if (dateStart && updateAt < dateStart) {
+          continue;
+        }
+
+        // 終了日が入力されていて、それより後なら除外
+        if (dateEnd && updateAt > dateEnd) {
+          continue;
+        }
+
         tableBody.push(Object.values(student));
       }
 
