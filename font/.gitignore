@@ -1,0 +1,4 @@
+# フォントファイル
+*.ttf
+*.txt
+myFontFamily-base64.js
