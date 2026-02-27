@@ -134,6 +134,14 @@
      **/
     function listGrid() {
 
+      // オブジェクトのロード
+      // Grid : グリッド本体
+      // l10n : ローカライゼーション（Localization）
+      const { Grid, l10n, html } = window.gridjs;
+      const { jaJP } = l10n;
+
+      // console.log(l10n);
+
       // バリデーションスタイルのクラス名
       const errClassName = 'error';
       const successClassName = 'success';
@@ -164,10 +172,24 @@
         // 番号を＋１する
         ix++;
 
+        // 編集用リンクを作成
+        const email = student.email;
+        // `encodeURIComponent` URLエンコードに変換してくれる
+        const editUrl = `index.html?email=${encodeURIComponent(email)}`;
+
+        // aタグのHTMLを組み立てる target="_blank" を入れることで「別タブ」で開く
+        // gridjs.html という用意されているオブジェクトを使うと HTML要素として解釈する。指定しないとプレーンテキストととなる。
+        // const linkIndex = `<a href="${editUrl}" target="_blank">${ix}</a>`; // こっちはプレーンテキスト
+        const linkIndex = html(`<a href="${editUrl}" target="_blank">${ix}</a>`);
+
         // グリッドデータ用のデータ配列へ”値のみ”を追加する。例）[1,'牛田あああaaaa','ushida@cscweb.jp',続く..]
         // ...（展開演算子｜スプレッド構文）と呼ばれる。配列やオブジェクトの要素を全て取り出す便利な記述
         // ↓ で [ ix（番号） , '牛田あああaaaa','ushida@cscweb.jp',続く.. ] の様な値だけの配列ができる。それを `push` で表用の配列へ追加
-        gridData.push([ix, ...Object.values(student)]);
+        // gridData.push([ix, ...Object.values(student)]);
+
+        // ix を編集リンクに変更
+        gridData.push([linkIndex, ...Object.values(student)]);
+
       }
 
       // 1件もない
@@ -176,14 +198,6 @@
         resultDiv.innerHTML = '登録データがまだありません。';
         return;
       }
-
-      // オブジェクトのロード
-      // Grid : グリッド本体
-      // l10n : ローカライゼーション（Localization）
-      const { Grid, l10n } = window.gridjs;
-      const { jaJP } = l10n;
-
-      // console.log(l10n);
 
       // 列の定義（幅を固定しない場合）
       const resizable = true;
