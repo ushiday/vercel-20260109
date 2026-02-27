@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学生交流会 参加登録照会（グリッド）</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      line-height: 1.6rem;
+      background-color: #f4f7f6;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      /* max-width: 500px; */
+      margin: auto;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 1.5rem;
+      border-left: 5px solid gold;
+      padding-left: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .card>button {
+      /* width: 100%; */
+
+      width: 300px;
+      padding: 12px;
+      margin-top: 20px;
+      background-color: gold;
+      color: #333;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: goldenrod;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    div.success {
+      display: block !important;
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    div.error {
+      display: block !important;
+      background-color: lightpink;
+      color: #333;
+    }
+
+    /* errorクラス 配下の子孫 p 全てに適用 */
+    div.error p {
+      margin: 0.1rem;
+    }
+
+    /* errorクラス 直下（子供）の p 全てに適用 */
+    /* .error>p {
+      margin: 0;
+    } */
+
+
+    /*--------------------------*/
+    /* グリッドのオリジナル設定 */
+    /*--------------------------*/
+
+    /* グリッド・コンテナ */
+    .list-grid-container {
+      font-size: 13px !important;
+    }
+
+    /* グリッド・テーブル見出（th）／項目（td） */
+    .list-grid-th,
+    .list-grid-td {
+      padding-top: 4px !important;
+      padding-left: 8px !important;
+      padding-bottom: 0 !important;
+      padding-right: 0 !important;
+    }
+  </style>
+
+
+  <!-- gridjs のスタイルとライブラリを読み込み -->
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/theme/mermaid.css' rel='stylesheet' />
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/gridjs/6.2.0/gridjs.production.min.js'></script>
+
+  <!-- gridjs の言語オブジェクトを読み込み -->
+  <script src='https://unpkg.com/gridjs/l10n/dist/l10n.umd.js'></script>
+
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>企業向け・学生交流会 参加登録照会（ jsgrid ）</h1>
+    <p>参加者のリストをグリッドで照会します。</p>
+
+    <button onclick="listGrid()">参加者を照会する</button>
+
+
+    <div id="result"></div>
+    <div id='student-grid'></div>
+  </div>
+
+  <script>
+    /**
+     * 参加者グリッドを照会する
+     * https://github.com/grid-js/gridjs
+     * https://gridjs.io/docs
+     **/
+    function listGrid() {
+
+      // バリデーションスタイルのクラス名
+      const errClassName = 'error';
+      const successClassName = 'success';
+
+      // 結果表示を初期化
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = '';
+      resultDiv.className = '';
+
+      // LocalStorageから名簿データを取得
+      const storageKey = 'student_list';
+      const currentListJson = localStorage.getItem(storageKey);
+
+      if (!currentListJson) {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '登録データがまだありません。';
+        return;
+      }
+
+      const studentList = JSON.parse(currentListJson);  // ローカルストレージのJSON文字列をオブジェクトリストに変換する
+      const students = Object.values(studentList);      // オブジェクトから値を取り出し配列化する
+      const gridData = [];                              // グリッド用のデータ配列 [1,'牛田あああaaaa','ushida@cscweb.jp',続く..]
+      let ix = 0;                                       // 番号
+
+      // 生徒リストの回数を繰り返す
+      for (student of students) {
+        // 番号を＋１する
+        ix++;
+
+        // グリッドデータ用のデータ配列へ”値のみ”を追加する。例）[1,'牛田あああaaaa','ushida@cscweb.jp',続く..]
+        // ...（展開演算子｜スプレッド構文）と呼ばれる。配列やオブジェクトの要素を全て取り出す便利な記述
+        // ↓ で [ ix（番号） , '牛田あああaaaa','ushida@cscweb.jp',続く.. ] の様な値だけの配列ができる。それを `push` で表用の配列へ追加
+        gridData.push([ix, ...Object.values(student)]);
+      }
+
+      // 1件もない
+      if (!gridData.length) {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '登録データがまだありません。';
+        return;
+      }
+
+      // オブジェクトのロード
+      // Grid : グリッド本体
+      // l10n : ローカライゼーション（Localization）
+      const { Grid, l10n } = window.gridjs;
+      const { jaJP } = l10n;
+
+      // console.log(l10n);
+
+      // 列の定義（幅を固定しない場合）
+      const resizable = true;
+      const columns = ['№', '名前', 'email', '学校', '学部・学科', '学年', '興味', '住所', 'ひとこと', '懇親会参加', '登録日時'];
+
+      // 列の定義（幅を固定する場合※）
+      // const resizable = false;
+      // const columns = [
+      //   { name: '№', width: '80px' },
+      //   { name: '名前', width: '240px' },
+      //   { name: 'email', width: '240px' },
+      //   { name: '学校', width: '120px' },
+      //   { name: '学部・学科', width: '240px' },
+      //   { name: '学年', width: '120px' },
+      //   { name: '興味', width: '240px' },
+      //   { name: '住所', width: '240px' },
+      //   { name: 'ひとこと', width: '240px' },
+      //   { name: '懇親会参加', width: '160px' },
+      //   { name: '登録日時', width: '240px' },
+      // ];
+
+      // 自分で言語オブジェクトにオリジナル部分を加える場合
+      const myLang = {
+        ...jaJP
+        ,
+        search: {
+          ...jaJP.search,
+          placeholder: '🔍検索...'
+        },
+        pagination: {
+          ...jaJP.pagination,
+          previous: '←',
+          next: '→',
+          showing: '表示：',
+          results: () => '件）'
+        }
+      }
+
+      // オリジナルのスタイル調整（プログラムで設定する場合）
+      const style = {
+        container: {
+          'font-size': '13px',
+        },
+        th: {
+          'padding-top': '4px',
+          'padding-left': '8px',
+          'padding-bottom': '0',
+          'padding-right': '0',
+        },
+        td: {
+          'padding-top': '4px',
+          'padding-left': '8px',
+          'padding-bottom': '0',
+          'padding-right': '0',
+        },
+      }
+
+      const myGrid = new Grid({
+        columns: columns,
+        data: gridData,
+        search: true,      // 検索窓を出す
+        sort: true,        // ソート機能を有効化
+        pagination: {      // ページ分割
+          limit: 5
+        },
+        resizable: resizable,    // 列の幅の変更を可能にする（※注意：列幅固定の`width`指定の場合は機能しない）
+        fixedHeader: true, // ヘッダーを固定（スクロールしても見出しが消えない）
+        width: '100%',     // コンテナの幅に合わせる
+        // height: '400px',   // 高さを指定すると縦スクロールも出ます
+        // 自前で記述する方法
+        // language: {
+        //   search: { placeholder: '🔍検索...' },
+        //   pagination: {
+        //     previous: '⬅️', // ⬅️ や ➡️ を使うとフォントの特性上 1px高さがずれる
+        //     next: '➡️',
+        //     showing: '表示：',
+        //     results: () => '件'
+        //   }
+        // },
+
+        // 言語オブジェクトを使う場合
+        // language: jaJP,
+
+        // オリジナル言語オブジェクトを使う場合
+        language: myLang,
+
+
+        // 独自のスタイルをプログラムで設定する場合
+        // style: style,
+
+        // 独自のスタイルをクラスで設定する場合
+        className: {
+          container: 'list-grid-container',
+          th: 'list-grid-th',
+          td: 'list-grid-td',
+        },
+
+      });
+
+      myGrid.render(document.getElementById('student-grid'));
+
+      resultDiv.className = successClassName;
+      resultDiv.innerHTML = `${gridData.length} 件のデータがありました。`;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
