@@ -87,6 +87,30 @@
     /*--------------------------*/
     /* テーブルの設定 */
     /*--------------------------*/
+    /* テーブル全体の設定 */
+    .list-table {
+      width: 100%;
+      /* 隣り合うセルの線を重ねる（これがないと二重線になる） */
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    /* 見出セルの設定 */
+    .list-table th {
+      background-color: #f8f9fa;
+      /* ヘッダーの背景色 */
+      font-weight: bold;
+    }
+
+    /* 見出／項目セルの共通設定 */
+    .list-table th,
+    .list-table td {
+      /* 線を引く */
+      border: 1px solid #ccc;
+      padding: 4px;
+      /* セルの中文字は`左詰め` */
+      text-align: left;
+    }
   </style>
 
 </head>
@@ -101,7 +125,7 @@
 
 
     <div id="result"></div>
-    <table>
+    <table class='list-table'>
       <thead>
         <tr>
           <th>名前</th>
