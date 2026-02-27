@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>学生交流会 参加登録報告リスト</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 40px;
+      line-height: 1.6rem;
+      background-color: #f4f7f6;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 1.5rem;
+      border-left: 5px solid #11b31e;
+      padding-left: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background-color: #11b31e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #0e8318;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    div.success {
+      display: block !important;
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    div.error {
+      display: block !important;
+      background-color: lightpink;
+      color: #333;
+    }
+
+    /* errorクラス 配下の子孫 p 全てに適用 */
+    div.error p {
+      margin: 0.1rem;
+    }
+
+    /* errorクラス 直下（子供）の p 全てに適用 */
+    /* .error>p {
+      margin: 0;
+    } */
+  </style>
+
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js'></script>
+  <script src='./font/myFontFamily-base64.js'></script>
+
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>企業向け・学生交流会 参加登録 報告リスト</h1>
+    <p>参加者の報告リストを発行します。</p>
+
+    <button onclick="printReport()">報告リストを発行する</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    /**
+     *  ■準備（フォントファイルのBase64化）
+     *    cd ./font
+     *
+     *    # *.ttf を Base64 テキスト化
+     *    node .\getbase64.js
+     *
+     *    # *-base64.txt のテキストを *-base64.js 内の変数に貼り付けし <script> タグで読み込む
+     *
+    **/
+
+    /**
+     * 参加者リストを発行する
+     *  jsPDF
+     *  - https://github.com/parallax/jsPDF
+     *  - https://raw.githack.com/MrRio/jsPDF/master/docs/index.html
+     *
+     *  jsPDF-autoTable
+     *  - https://github.com/simonbengtsson/jsPDF-AutoTable
+     *  - https://simonbengtsson.github.io/jsPDF-AutoTable/
+     **/
+    function printReport() {
+
+      // バリデーションスタイルのクラス名
+      const errClassName = 'error';
+      const successClassName = 'success';
+
+      // 結果表示を初期化
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.innerHTML = "";
+      resultDiv.className = "";
+
+      // LocalStorageから名簿データを取得
+      const storageKey = 'student_list';
+      const currentListJson = localStorage.getItem(storageKey);
+
+      const REPORT_FONT = {
+        NAME: 'NotoSansJP',
+        STYLE: 'normal',
+        SIZE: 11,
+      }
+
+      if (!currentListJson) {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '登録データがまだありません。';
+        return;
+      }
+
+      const studentList = JSON.parse(currentListJson);
+
+      const { jsPDF } = window.jspdf;
+
+      /**
+       * 引数 1：向き（p:縦※デフォルト、l:横）
+       * 引数 2：単位（mm ,xm ,pt）
+       * 引数 3：サイズ（a4,a3,b5 カスタムは配列で[幅 ,高]）
+       *
+       */
+      const doc = new jsPDF('l', 'mm', 'a3');
+
+      // フォントを登録
+      doc.addFileToVFS('NotoSansJP-Regular.ttf', MY_FONT_FAMILY.NotoSansJP_Reg);
+      doc.addFont('NotoSansJP-Regular.ttf', REPORT_FONT.NAME, REPORT_FONT.STYLE);
+      doc.setFont('NotoSansJP');
+
+      // タイトルの設定
+      doc.setFontSize(REPORT_FONT.SIZE);
+      doc.text('学生交流会登録・報告リスト', 20, 20);
+
+
+      const students = Object.values(studentList);
+      const tableBody = [];
+      for (student of students) {
+        tableBody.push(Object.values(student));
+      }
+
+      // 1件もない
+      if (!tableBody.length) {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '登録データがまだありません。';
+        return;
+      }
+
+      // テーブル作成時にもフォントを指定
+      doc.autoTable({
+        head: [['名前', 'email', '学校', '学部・学科', '学年', '興味', '住所', 'ひとこと', '懇親会参加', '登録日時']],
+        body: tableBody,
+        styles: { font: REPORT_FONT.NAME, fontSize: REPORT_FONT.SIZE, fontStyle: REPORT_FONT.STYLE }, // フォントを指定
+        startY: 30,
+      });
+
+      // ダウンロード実行の場合
+      // doc.save('学生交流会登録報告リスト.pdf');
+
+      // ブラウザ内に表示の場合
+      doc.output('pdfobjectnewwindow');
+
+      resultDiv.className = successClassName;
+      resultDiv.innerHTML = `${tableBody.length} 件の報告リストが発行されました。`;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
