@@ -187,7 +187,18 @@
 
         // セル `tdタグ` を1つずつ作成し、データを設定
         ix++;
-        row.insertCell(0).textContent = ix;                             // №
+
+        // 編集用リンクを作成
+        const email = student.email;
+        // `encodeURIComponent` URLエンコードに変換してくれる
+        const editUrl = `index.html?email=${encodeURIComponent(email)}`;
+
+        // aタグのHTMLを組み立てる
+        // target="_blank" を入れることで「別タブ」で開く
+        const linkIndex = `<a href="${editUrl}" target="_blank">${ix}</a>`;
+
+        // row.insertCell(0).textContent = ix;                             // №
+        row.insertCell(0).innerHTML = linkIndex;                        // №（編集リンク
         row.insertCell(1).textContent = student.name;                   // 名前
         row.insertCell(2).textContent = student.email;                  // メール
         row.insertCell(3).textContent = student.university;             // 学校
