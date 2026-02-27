@@ -128,6 +128,7 @@
     <table class='list-table'>
       <thead>
         <tr>
+          <th>№</th>
           <th>名前</th>
           <th>email</th>
           <th>学校</th>
@@ -179,21 +180,24 @@
 
       const studentList = JSON.parse(currentListJson);
       const students = Object.values(studentList);
+      let ix = 0;
       for (student of students) {
         // 新しい行を作成
         const row = tbody.insertRow();
 
         // セル `tdタグ` を1つずつ作成し、データを設定
-        row.insertCell(0).textContent = student.name;                   // 名前
-        row.insertCell(1).textContent = student.email;                  // メール
-        row.insertCell(2).textContent = student.university;             // 学校
-        row.insertCell(3).textContent = student.department;             // 学部・学科
-        row.insertCell(4).textContent = student.grade;                  // 学年
-        row.insertCell(5).textContent = student.interests.join(',');    // 興味
-        row.insertCell(6).textContent = student.address;                // 住所
-        row.insertCell(7).textContent = student.message;                // ひとこと
-        row.insertCell(8).textContent = student.party;                  // 懇親会
-        row.insertCell(9).textContent = student.updatedAt;              // 登録日時
+        ix++;
+        row.insertCell(0).textContent = ix;                             // №
+        row.insertCell(1).textContent = student.name;                   // 名前
+        row.insertCell(2).textContent = student.email;                  // メール
+        row.insertCell(3).textContent = student.university;             // 学校
+        row.insertCell(4).textContent = student.department;             // 学部・学科
+        row.insertCell(5).textContent = student.grade;                  // 学年
+        row.insertCell(6).textContent = student.interests.join(',');    // 興味
+        row.insertCell(7).textContent = student.address;                // 住所
+        row.insertCell(8).textContent = student.message;                // ひとこと
+        row.insertCell(9).textContent = student.party;                  // 懇親会
+        row.insertCell(10).textContent = student.updatedAt;              // 登録日時
 
       }
 
