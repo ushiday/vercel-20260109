@@ -260,7 +260,38 @@
      * windows.onload() ブラウザのＨＴＭＬが整った後に続けて実行される
      **/
     window.onload = function () {
+
+      // クエリパラメータの設定
+      setQueryParams();
+
+      // フォームの初期設定
       setRegistForm();
+
+    }
+
+    /**
+     * クエリパラメータの設定
+     **/
+    function setQueryParams() {
+
+      // URLのパラメータ（?以降）を解析する
+      // 例）URLのエンコード `http://127.0.0.1:5500/index.html?email=ushida%40cscweb.jp`
+      const params = new URLSearchParams(window.location.search);
+
+      // "email" という名前のパラメータがあるかチェックして取得
+      const paramEmail = params.get('email');
+
+      if (paramEmail) {
+        // 入力欄にセットする
+        document.getElementById('userEmail').value = paramEmail;
+
+        // メールアドレスが最初から入っているなら、自動で「修正」モードにする
+        const elemRegistClass = document.querySelector('input[name="registClass"][value="修正"]');
+        if (elemRegistClass) {
+          elemRegistClass.checked = true;
+        }
+      }
+
     }
 
     /**
