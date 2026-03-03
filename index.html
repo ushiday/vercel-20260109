@@ -256,6 +256,16 @@
     var registCount = 0;
     var valueRegistClass = '';
 
+    // 結果オブジェクト
+    const RESULT_OBJ = {
+      div: 'result',    // div 要素
+      // 結果のクラス名
+      css: {
+        error: 'error',         // エラー
+        success: 'success',     // 成功
+      }
+    }
+
     /**
      * windows.onload() ブラウザのＨＴＭＬが整った後に続けて実行される
      **/
@@ -355,10 +365,32 @@
     function clearResultMessage() {
 
       // 結果表示を初期化
-      const resultDiv = document.getElementById('result');
+      const resultDiv = document.getElementById(RESULT_OBJ.div);
 
       resultDiv.innerHTML = "";
       resultDiv.className = "";
+
+    }
+
+    /**
+     * 結果メッセージ欄の設定
+     * @param {string}  message - 設定するメッセージ
+     * @param {boolean} isError - エラー表示
+     */
+    function setResultMessage(message, isError) {
+
+      // 結果表示を初期化
+      const resultDiv = document.getElementById(RESULT_OBJ.div);
+
+      // 結果メッセージを追加
+      resultDiv.innerHTML += message;
+
+      // エラーの場合
+      if (isError) {
+        resultDiv.className = RESULT_OBJ.css.error;
+      } else {
+        resultDiv.className = RESULT_OBJ.css.success;
+      }
 
     }
 
@@ -409,8 +441,10 @@
           elemName.focus();
         }
         chkErr = true;
-        resultDiv.className = errClassName;
-        resultDiv.innerHTML += "<p>名前が入力されていません</p>";
+        setResultMessage(
+          "<p>名前が入力されていません</p>",
+          chkErr
+        );
       } else {
         elemName.classList.add(successClassName);
       }
@@ -421,8 +455,11 @@
           elemEmail.focus();
         }
         chkErr = true;
-        resultDiv.className = errClassName;
-        resultDiv.innerHTML += "<p>メールアドレスが入力されていません</p>";
+        setResultMessage(
+          "<p>メールアドレスが入力されていません</p>",
+          chkErr
+        );
+
       } else {
         elemEmail.classList.add(successClassName);
       }
@@ -433,8 +470,10 @@
           elemUniversity.focus();
         }
         chkErr = true;
-        resultDiv.className = errClassName;
-        resultDiv.innerHTML += "<p>大学名が入力されていません</p>";
+        setResultMessage(
+          "<p>大学名が入力されていません</p>",
+          chkErr
+        );
       } else {
         elemUniversity.classList.add(successClassName);
       }
@@ -445,8 +484,10 @@
           elemDepartment.focus();
         }
         chkErr = true;
-        resultDiv.className = errClassName;
-        resultDiv.innerHTML += "<p>学部・学科が入力されていません</p>";
+        setResultMessage(
+          "<p>学部・学科が入力されていません</p>",
+          chkErr
+        );
       } else {
         elemDepartment.classList.add(successClassName);
       }
@@ -457,18 +498,20 @@
           elemGrade.focus();
         }
         chkErr = true;
-        resultDiv.className = errClassName;
-        resultDiv.innerHTML += "<p>学年が選択されていません</p>";
+        setResultMessage(
+          "<p>学年が選択されていません</p>",
+          chkErr
+        );
       } else {
         elemGrade.classList.add(successClassName);
       }
 
-      // エラーが発生している
-      if (resultDiv.className !== "") {
+      // エラーが発生している場合は終了する
+      if (chkErr) {
         return
       }
 
-      resultDiv.className = successClassName;
+      // 成功時の処理
       let message = "ようこそ、" + valueName + " さん！<br>学生交流会への仮登録が完了しました。";
       message += "<br>所属：" + valueUniversity + " " + valueDepartment + " (" + valueGrade + ")";
       message += "<br>メール：" + valueEmail;
@@ -517,7 +560,10 @@
         message += "<br>ひとこと：" + valueMessage;
       }
 
-      resultDiv.innerHTML = message;
+      setResultMessage(
+        message,
+        chkErr
+      );
 
       /****************************************************
        * --- ここからLocalStorage保存処理 ---
@@ -689,8 +735,8 @@
       const successClassName = 'success';
 
 
-      // 結果表示を初期化
       clearResultMessage();
+      // 結果表示を初期化
 
       // Emailを取得
       const elemEmail = document.getElementById('userEmail');
@@ -703,13 +749,10 @@
       setRegistForm();
 
       // 削除の結果を表示
-      if (deleteResult.error === true) {
-        resultDiv.className = errClassName;
-      } else {
-        resultDiv.className = successClassName;
-      }
-
-      resultDiv.innerHTML = deleteResult.message;
+      setResultMessage(
+        deleteResult.message,
+        deleteResult.error
+      );
 
       addRegistCount();
 
