@@ -437,20 +437,57 @@
     function resetForm() {
 
       // ドキュメントの要素を取得
-      const elemName = document.getElementById('userName');
+      const form = getForm()
+
+      // バリデーションスタイルの初期化（クラスの除去）
+      form.elemName.classList.remove(...Object.values(RESULT_OBJ.css));
+      form.elemEmail.classList.remove(...Object.values(RESULT_OBJ.css));
+      form.elemUniversity.classList.remove(...Object.values(RESULT_OBJ.css));
+      form.elemDepartment.classList.remove(...Object.values(RESULT_OBJ.css));
+      form.elemGrade.classList.remove(...Object.values(RESULT_OBJ.css));
+      form.elemAddress.classList.remove(...Object.values(RESULT_OBJ.css));
+
+    }
+
+    /**
+     * フォームの入力要素を取得
+     * @returns {{
+     *  elemEmail:HTMLInputElement,
+     *  elemName:HTMLInputElement,
+     *  elemUnivarsity:HTMLInputElement,
+     *  elemDpertment:HTMLInputElement,
+     *  elemGrade:HTMLSelectElement,
+     *  elemAddress:HTMLInputElement,
+     *  elemMessage:HTMLInputElement,
+     *  elemParties:[HTMLInputElement],
+     *  elemInterests:[HTMLInputElement],
+     * }} フォームの入力オブジェクト
+     */
+    function getForm() {
+
+      // ドキュメントの要素を取得
       const elemEmail = document.getElementById('userEmail');
+      const elemName = document.getElementById('userName');
       const elemUniversity = document.getElementById('userUniversity');
       const elemDepartment = document.getElementById('userDepartment');
       const elemGrade = document.getElementById('userGrade');
       const elemAddress = document.getElementById('userAddress');
+      const elemMessage = document.getElementById('userMessage');
 
-      // バリデーションスタイルの初期化（クラスの除去）
-      elemName.classList.remove(...Object.values(RESULT_OBJ.css));
-      elemEmail.classList.remove(...Object.values(RESULT_OBJ.css));
-      elemUniversity.classList.remove(...Object.values(RESULT_OBJ.css));
-      elemDepartment.classList.remove(...Object.values(RESULT_OBJ.css));
-      elemGrade.classList.remove(...Object.values(RESULT_OBJ.css));
-      elemAddress.classList.remove(...Object.values(RESULT_OBJ.css));
+      const elemParties = document.getElementsByName('party');
+      const elemInterests = document.getElementsByName('interest');
+
+      return {
+        elemName,
+        elemEmail,
+        elemUniversity,
+        elemDepartment,
+        elemGrade,
+        elemAddress,
+        elemMessage,
+        elemParties,
+        elemInterests,
+      }
 
     }
 
@@ -464,12 +501,17 @@
       const successClassName = RESULT_OBJ.css.success;;
 
       // ドキュメントの要素を取得
-      const elemName = document.getElementById('userName');
-      const elemEmail = document.getElementById('userEmail');
-      const elemUniversity = document.getElementById('userUniversity');
-      const elemDepartment = document.getElementById('userDepartment');
-      const elemGrade = document.getElementById('userGrade');
-      const elemAddress = document.getElementById('userAddress');
+      const {
+        elemName,
+        elemEmail,
+        elemUniversity,
+        elemDepartment,
+        elemGrade,
+        elemAddress,
+        elemParties,
+        elemInterests,
+        elemMessage,
+      } = getForm()
 
       // フォームの状態をリセット
       resetForm()
@@ -572,7 +614,7 @@
       message += "<br>メール：" + valueEmail;
 
       // ラジオボタンの取得
-      const radios = document.getElementsByName('party');
+      const radios = elemParties;
       let valueParty;
 
       for (const radio of radios) {
@@ -585,8 +627,7 @@
       // チェックボックス（複数選択）の取得
       // const interests = [];
       // const checkboxes = document.querySelectorAll('input[name="interest"]:checked');
-
-      const checkboxes = document.getElementsByName('interest');
+      const checkboxes = elemInterests;
 
       let interests = '';
 
@@ -610,7 +651,7 @@
       }
 
       // ひとこと
-      const valueMessage = document.getElementById('userMessage').value;
+      const valueMessage = elemMessage.value;
       if (valueMessage !== "") {
         message += "<br>ひとこと：" + valueMessage;
       }
