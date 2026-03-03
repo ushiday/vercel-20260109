@@ -345,6 +345,16 @@
       }
 
       // 結果表示を初期化
+      clearResultMessage();
+
+    }
+
+    /**
+     * 結果メッセージ欄のクリアー
+     */
+    function clearResultMessage() {
+
+      // 結果表示を初期化
       const resultDiv = document.getElementById('result');
 
       resultDiv.innerHTML = "";
@@ -386,10 +396,7 @@
       const valueAddress = elemAddress.value.trim();
 
       // 結果表示を初期化
-      const resultDiv = document.getElementById('result');
-
-      resultDiv.innerHTML = "";
-      resultDiv.className = "";
+      clearResultMessage();
 
       let chkErr = false;     // エラー・フラグ（true = エラーあり
 
@@ -683,10 +690,7 @@
 
 
       // 結果表示を初期化
-      const resultDiv = document.getElementById('result');
-
-      resultDiv.innerHTML = "";
-      resultDiv.className = "";
+      clearResultMessage();
 
       // Emailを取得
       const elemEmail = document.getElementById('userEmail');
