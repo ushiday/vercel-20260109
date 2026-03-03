@@ -253,8 +253,12 @@
   </div>
 
   <script>
-    var registCount = 0;
-    var valueRegistClass = '';
+
+    // 登録フォームオブジェクト
+    const FORM_OBJ = {
+      mode: '',                // 登録モード（新規／修正／取消
+      registCount: 0,          // 登録件数
+    }
 
     // 結果オブジェクト
     const RESULT_OBJ = {
@@ -312,7 +316,7 @@
       // 登録区分を取得
       // `querySelector`チェック済みを取得するループさせなくて良い取得方法
       const elemRegistClass = document.querySelector('input[name="registClass"]:checked');
-      valueRegistClass = elemRegistClass.value;
+      FORM_OBJ.mode = elemRegistClass.value;
 
       // 登録フォーム
       const newClassName = 'regist_new';
@@ -336,7 +340,7 @@
       // 削除ボタンは使用不可
       elemButtonDel.classList.add(button_diabledClassName);
 
-      switch (valueRegistClass) {
+      switch (FORM_OBJ.mode) {
         case '新規':
           elemRegistForm.classList.add(newClassName);
           elemButtonNew.classList.add(button_enabledClassName);
@@ -714,7 +718,7 @@
       elemButtonInq.classList.add(button_diabledClassName);
 
       // 変更処理
-      if (valueRegistClass === '修正') {
+      if (FORM_OBJ.mode === '修正') {
         elemButtonNew.classList.add(button_enabledClassName);
         elemButtonDel.classList.add(button_diabledClassName);
         // 削除処理
@@ -808,17 +812,17 @@
      **/
     function addRegistCount() {
 
-      switch (valueRegistClass) {
+      switch (FORM_OBJ.mode) {
         case '新規':
-          registCount++;
+          FORM_OBJ.registCount++;
           break;
         case '取消':
-          registCount--;
+          FORM_OBJ.registCount--;
           break;
       }
 
       const registCountDiv = document.getElementById('registCount');
-      registCountDiv.innerHTML = "現在の登録者数：「" + registCount + "」人です";
+      registCountDiv.innerHTML = "現在の登録者数：「" + FORM_OBJ.registCount + "」人です";
     }
   </script>
 
