@@ -159,7 +159,7 @@
     }
 
     /* 修正／削除 */
-    .regist_maint,
+    .regist_update,
     .regist_delete {
       display: none;
     }
@@ -258,6 +258,12 @@
     const FORM_OBJ = {
       mode: 'N',               // 登録モード（N:新規／U:修正／D:取消
       registCount: 0,          // 登録件数
+      css: {
+        new: 'regist_new',
+        update: 'regist_update',
+        delete: 'regist_delete',
+        inq: 'form_inq',
+      },
     }
 
     // 結果オブジェクト
@@ -318,49 +324,65 @@
     /**
      * フォームの登録区分毎の切り替え
      * @param {string}  mode - フォーム設定する登録区分（N:新規 ,U:修正 ,D:取消）
+     * @param {boolean}  isLoad - true:ローカルストレージをロードした場合
      */
-    function setRegistForm(mode) {
+    function setRegistForm(mode, isLoad = false) {
 
       // 登録区分をグローバル変数へ設定（たとえ小文字が渡されても大文字へ変換）
       FORM_OBJ.mode = mode.toUpperCase();
 
       // 登録フォーム
-      const newClassName = 'regist_new';
-      const maintClassName = 'regist_maint';
-      const deleteClassName = 'regist_delete';
-      const inqClassName = 'form_inq';
       const elemRegistForm = document.getElementById('registForm');
-      elemRegistForm.classList.remove(newClassName, maintClassName, deleteClassName, inqClassName);
 
-      // 登録ボタン
+      // フォームのスタイルをリセット
+      // elemRegistForm.classList.remove(FORM_OBJ.css.new, FORM_OBJ.css.update, FORM_OBJ.css.delete, FORM_OBJ.css.inq);
+      elemRegistForm.classList.remove(...Object.values(FORM_OBJ.css));
+
+      // 登録ボタンのスタイルをリセット
       const elemButtonNew = document.getElementById('buttonNew');
       const elemButtonInq = document.getElementById('buttonInq');
       const elemButtonDel = document.getElementById('buttonDel');
 
       const button_diabledClassName = 'button_diabled';
       const button_enabledClassName = 'button_enabled';
+
       elemButtonNew.classList.remove(button_diabledClassName, button_enabledClassName);
       elemButtonInq.classList.remove(button_diabledClassName, button_enabledClassName);
       elemButtonDel.classList.remove(button_diabledClassName, button_enabledClassName);
 
-      // 削除ボタンは使用不可
-      elemButtonDel.classList.add(button_diabledClassName);
-
+      // フォームとボタンのクラスを設定
       switch (FORM_OBJ.mode) {
         case 'N':
-          elemRegistForm.classList.add(newClassName);
+          elemRegistForm.classList.add(FORM_OBJ.css.new);
           elemButtonNew.classList.add(button_enabledClassName);
           elemButtonInq.classList.add(button_diabledClassName);
+          elemButtonDel.classList.add(button_diabledClassName);
           break;
         case 'U':
-          elemRegistForm.classList.add(maintClassName);
-          elemButtonNew.classList.add(button_diabledClassName);
-          elemButtonInq.classList.add(button_enabledClassName);
+          elemRegistForm.classList.add(FORM_OBJ.css.update);
+          elemButtonDel.classList.add(button_diabledClassName);
+          // 学生エントリーを照会した後の表示
+          if (isLoad) {
+            elemButtonNew.classList.add(button_enabledClassName);
+            elemButtonInq.classList.add(button_diabledClassName);
+            elemRegistForm.classList.add(FORM_OBJ.css.inq);
+          } else {
+            elemButtonNew.classList.add(button_diabledClassName);
+            elemButtonInq.classList.add(button_enabledClassName);
+          }
           break;
         default:
-          elemRegistForm.classList.add(deleteClassName);
+          elemRegistForm.classList.add(FORM_OBJ.css.delete);
           elemButtonNew.classList.add(button_diabledClassName);
-          elemButtonInq.classList.add(button_enabledClassName);
+          // 学生エントリーを照会した後の表示
+          if (isLoad) {
+            elemButtonDel.classList.add(button_enabledClassName);
+            elemButtonInq.classList.add(button_diabledClassName);
+            elemRegistForm.classList.add(FORM_OBJ.css.inq);
+          } else {
+            elemButtonDel.classList.add(button_diabledClassName);
+            elemButtonInq.classList.add(button_enabledClassName);
+          }
           break;
       }
 
@@ -704,34 +726,7 @@
       alert('「' + userData.name + '」さんのデータを読み込みました。');
 
       // フォームを再設定
-      const inqClassName = 'form_inq';
-      const elemRegistForm = document.getElementById('registForm');
-      elemRegistForm.classList.add(inqClassName);
-
-      // ボタンを再設定
-      const elemButtonNew = document.getElementById('buttonNew');
-      const elemButtonInq = document.getElementById('buttonInq');
-      const elemButtonDel = document.getElementById('buttonDel');
-
-      const button_diabledClassName = 'button_diabled';
-      const button_enabledClassName = 'button_enabled';
-
-      elemButtonNew.classList.remove(button_diabledClassName, button_enabledClassName);
-      elemButtonInq.classList.remove(button_diabledClassName, button_enabledClassName);
-      elemButtonDel.classList.remove(button_diabledClassName, button_enabledClassName);
-
-      // 照会ボタンは使用不可
-      elemButtonInq.classList.add(button_diabledClassName);
-
-      // 変更処理
-      if (FORM_OBJ.mode === 'U') {
-        elemButtonNew.classList.add(button_enabledClassName);
-        elemButtonDel.classList.add(button_diabledClassName);
-        // 削除処理
-      } else {
-        elemButtonNew.classList.add(button_diabledClassName);
-        elemButtonDel.classList.add(button_enabledClassName);
-      }
+      setRegistForm(FORM_OBJ.mode, true)
 
     }
 
