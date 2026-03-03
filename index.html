@@ -263,6 +263,8 @@
         update: 'regist_update',
         delete: 'regist_delete',
         inq: 'form_inq',
+        error: 'error',         // エラー
+        success: 'success',     // 成功
       },
     }
 
@@ -337,6 +339,9 @@
       // フォームのスタイルをリセット
       // elemRegistForm.classList.remove(FORM_OBJ.css.new, FORM_OBJ.css.update, FORM_OBJ.css.delete, FORM_OBJ.css.inq);
       elemRegistForm.classList.remove(...Object.values(FORM_OBJ.css));
+
+      // フォームの状態をリセット
+      resetForm()
 
       // 登録ボタンのスタイルをリセット
       const elemButtonNew = document.getElementById('buttonNew');
@@ -427,13 +432,9 @@
     }
 
     /**
-     * 参加登録処理
-     **/
-    function checkRegistration() {
-
-      // バリデーションスタイルのクラス名
-      const errClassName = 'error';
-      const successClassName = 'success';
+     * フォームの状態リセット
+     */
+    function resetForm() {
 
       // ドキュメントの要素を取得
       const elemName = document.getElementById('userName');
@@ -444,12 +445,34 @@
       const elemAddress = document.getElementById('userAddress');
 
       // バリデーションスタイルの初期化（クラスの除去）
-      elemName.classList.remove(errClassName, successClassName);
-      elemEmail.classList.remove(errClassName, successClassName);
-      elemUniversity.classList.remove(errClassName, successClassName);
-      elemDepartment.classList.remove(errClassName, successClassName);
-      elemGrade.classList.remove(errClassName, successClassName);
-      elemAddress.classList.remove(errClassName, successClassName);
+      elemName.classList.remove(...Object.values(RESULT_OBJ.css));
+      elemEmail.classList.remove(...Object.values(RESULT_OBJ.css));
+      elemUniversity.classList.remove(...Object.values(RESULT_OBJ.css));
+      elemDepartment.classList.remove(...Object.values(RESULT_OBJ.css));
+      elemGrade.classList.remove(...Object.values(RESULT_OBJ.css));
+      elemAddress.classList.remove(...Object.values(RESULT_OBJ.css));
+
+    }
+
+    /**
+     * 参加登録処理
+     **/
+    function checkRegistration() {
+
+      // バリデーションスタイルのクラス名
+      const errClassName = RESULT_OBJ.css.error;
+      const successClassName = RESULT_OBJ.css.success;;
+
+      // ドキュメントの要素を取得
+      const elemName = document.getElementById('userName');
+      const elemEmail = document.getElementById('userEmail');
+      const elemUniversity = document.getElementById('userUniversity');
+      const elemDepartment = document.getElementById('userDepartment');
+      const elemGrade = document.getElementById('userGrade');
+      const elemAddress = document.getElementById('userAddress');
+
+      // フォームの状態をリセット
+      resetForm()
 
       // 入力した値を取得（トリム済み）
       const valueName = elemName.value.trim();
