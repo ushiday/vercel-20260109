@@ -193,9 +193,9 @@
 
     <label>登録区分</label>
     <div class="radio-group">
-      <label><input type="radio" name="registClass" value="新規" checked onclick="setRegistForm()"> 新規</label>
-      <label><input type="radio" name="registClass" value="修正" onclick="setRegistForm()"> 修正</label>
-      <label><input type="radio" name="registClass" value="取消" onclick="setRegistForm()"> 取消</label>
+      <label><input type="radio" name="formMode" value="N" checked onclick="setRegistForm('N')"> 新規</label>
+      <label><input type="radio" name="formMode" value="U" onclick="setRegistForm('U')"> 修正</label>
+      <label><input type="radio" name="formMode" value="D" onclick="setRegistForm('D')"> 取消</label>
     </div>
 
     <label>メールアドレス（必須）</label>
@@ -256,7 +256,7 @@
 
     // 登録フォームオブジェクト
     const FORM_OBJ = {
-      mode: '',                // 登録モード（新規／修正／取消
+      mode: 'N',               // 登録モード（N:新規／U:修正／D:取消
       registCount: 0,          // 登録件数
     }
 
@@ -276,21 +276,25 @@
     window.onload = function () {
 
       // クエリパラメータの設定
-      setQueryParams();
+      const mode = setQueryParams();
 
       // フォームの初期設定
-      setRegistForm();
+      setRegistForm(mode);
 
     }
 
     /**
      * クエリパラメータの設定
-     **/
+     * @returns {string}  mode - フォーム設定する登録区分（N:新規 ,U:修正 ,D:取消）
+     */
     function setQueryParams() {
 
       // URLのパラメータ（?以降）を解析する
       // 例）URLのエンコード `http://127.0.0.1:5500/index.html?email=ushida%40cscweb.jp`
       const params = new URLSearchParams(window.location.search);
+
+      // フォームの登録区分モード
+      let mode = FORM_OBJ.mode;       // デフォルト値
 
       // "email" という名前のパラメータがあるかチェックして取得
       const paramEmail = params.get('email');
@@ -300,23 +304,25 @@
         document.getElementById('userEmail').value = paramEmail;
 
         // メールアドレスが最初から入っているなら、自動で「修正」モードにする
-        const elemRegistClass = document.querySelector('input[name="registClass"][value="修正"]');
+        const elemRegistClass = document.querySelector('input[name="formMode"][value="U"]');
         if (elemRegistClass) {
           elemRegistClass.checked = true;
+          mode = 'U';       // 修正モード
         }
       }
+
+      return mode;
 
     }
 
     /**
      * フォームの登録区分毎の切り替え
-     **/
-    function setRegistForm() {
+     * @param {string}  mode - フォーム設定する登録区分（N:新規 ,U:修正 ,D:取消）
+     */
+    function setRegistForm(mode) {
 
-      // 登録区分を取得
-      // `querySelector`チェック済みを取得するループさせなくて良い取得方法
-      const elemRegistClass = document.querySelector('input[name="registClass"]:checked');
-      FORM_OBJ.mode = elemRegistClass.value;
+      // 登録区分をグローバル変数へ設定（たとえ小文字が渡されても大文字へ変換）
+      FORM_OBJ.mode = mode.toUpperCase();
 
       // 登録フォーム
       const newClassName = 'regist_new';
@@ -341,12 +347,12 @@
       elemButtonDel.classList.add(button_diabledClassName);
 
       switch (FORM_OBJ.mode) {
-        case '新規':
+        case 'N':
           elemRegistForm.classList.add(newClassName);
           elemButtonNew.classList.add(button_enabledClassName);
           elemButtonInq.classList.add(button_diabledClassName);
           break;
-        case '修正':
+        case 'U':
           elemRegistForm.classList.add(maintClassName);
           elemButtonNew.classList.add(button_diabledClassName);
           elemButtonInq.classList.add(button_enabledClassName);
@@ -718,7 +724,7 @@
       elemButtonInq.classList.add(button_diabledClassName);
 
       // 変更処理
-      if (FORM_OBJ.mode === '修正') {
+      if (FORM_OBJ.mode === 'U') {
         elemButtonNew.classList.add(button_enabledClassName);
         elemButtonDel.classList.add(button_diabledClassName);
         // 削除処理
@@ -750,7 +756,7 @@
       const deleteResult = deleteFromLocalStorage(valueEmail);
 
       // フォーム表示をリセット
-      setRegistForm();
+      setRegistForm('D');
 
       // 削除の結果を表示
       setResultMessage(
@@ -813,10 +819,10 @@
     function addRegistCount() {
 
       switch (FORM_OBJ.mode) {
-        case '新規':
+        case 'N':
           FORM_OBJ.registCount++;
           break;
-        case '取消':
+        case 'D':
           FORM_OBJ.registCount--;
           break;
       }
