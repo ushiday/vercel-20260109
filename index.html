@@ -454,8 +454,8 @@
      * @returns {{
      *  elemEmail:HTMLInputElement,
      *  elemName:HTMLInputElement,
-     *  elemUnivarsity:HTMLInputElement,
-     *  elemDpertment:HTMLInputElement,
+     *  elemUniversity:HTMLInputElement,
+     *  elemDepartment:HTMLInputElement,
      *  elemGrade:HTMLSelectElement,
      *  elemAddress:HTMLInputElement,
      *  elemMessage:HTMLInputElement,
@@ -488,6 +488,64 @@
         elemParties,
         elemInterests,
       }
+
+    }
+
+
+    /**
+     * フォームに値をセット
+     * @param {Object} userData - 学生エントリーデータ
+     * @param {string} userData.name - 名前
+     * @param {string} userData.email - メールアドレス
+     * @param {string} userData.university - 大学名
+     * @param {string} userData.department - 学部・学科
+     * @param {string} userData.grade - 学年
+     * @param {string} userData.address - 住所
+     * @param {string} userData.message - ひとこと
+     * @param {string} userData.party - 懇親会参加
+     * @param {string} userData.interests - 興味
+     */
+    function setFormValue(userData) {
+
+      // ドキュメントの要素を取得
+      const form = getForm()
+
+      // データが見つかったら、各入力フォームに値をセットする
+      form.elemName.value = userData.name;
+      form.elemEmail.value = userData.email;
+      form.elemUniversity.value = userData.university;
+      form.elemDepartment.value = userData.department;
+      form.elemGrade.value = userData.grade;
+      form.elemAddress.value = userData.address;
+      form.elemMessage.value = userData.message;
+
+      // ラジオボタンの再セット
+      const radios = form.elemParties;
+      for (const radio of radios) {
+        if (userData.party === radio.value) {
+          radio.checked = true;
+        } else {
+          radio.checked = false;
+        }
+      }
+
+      // チェックボックス（興味）の再セット
+      const checkboxes = form.elemInterests;
+      for (const checkbox of checkboxes) {
+        // 保存されている配列の中にその値が含まれていたら”真:true”。なかったら”偽:false”を返す
+        checkbox.checked = userData.interests.includes(checkbox.value);
+        /*** ↓↑ は同じ意味
+        checkbox.checked = false;
+        for (const interest of userData.interests) {
+          if (checkbox.value === interest) {
+            checkbox.checked = true;
+            break;
+          }
+        }
+        ***/
+
+      }
+
 
     }
 
@@ -752,40 +810,7 @@
         alert('該当するメールアドレスが見つかりませんでした。');
       }
       // データが見つかったら、各入力フォームに値をセットする
-      document.getElementById('userName').value = userData.name;
-      document.getElementById('userEmail').value = userData.email;
-      document.getElementById('userUniversity').value = userData.university;
-      document.getElementById('userDepartment').value = userData.department;
-      document.getElementById('userGrade').value = userData.grade;
-      document.getElementById('userAddress').value = userData.address;
-      document.getElementById('userMessage').value = userData.message;
-
-      // ラジオボタンの再セット
-      const radios = document.getElementsByName('party');
-      for (const radio of radios) {
-        if (userData.party === radio.value) {
-          radio.checked = true;
-        } else {
-          radio.checked = false;
-        }
-      }
-
-      // チェックボックス（興味）の再セット
-      const checkboxes = document.getElementsByName('interest');
-      for (const checkbox of checkboxes) {
-        // 保存されている配列の中にその値が含まれていたら”真:true”。なかったら”偽:false”を返す
-        checkbox.checked = userData.interests.includes(checkbox.value);
-        /*** ↓↑ は同じ意味
-        checkbox.checked = false;
-        for (const interest of userData.interests) {
-          if (checkbox.value === interest) {
-            checkbox.checked = true;
-            break;
-          }
-        }
-        ***/
-
-      }
+      setFormValue(userData);
 
       alert('「' + userData.name + '」さんのデータを読み込みました。');
 
