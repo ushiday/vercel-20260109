@@ -754,13 +754,12 @@
       };
 
       // 保存実行（ロカールストレージへ）
-      saveToLocalStorage(userData);
+      const studentCount = saveToLocalStorage(userData);
 
-      console.log("登録データ: ", {
-        valueName, valueEmail, valueUniversity, valueDepartment, valueGrade, arrayInterests, valueAddress
-      });
+      // カウント再表示
+      setRegistCount(studentCount);
 
-      addRegistCount();
+      console.log("登録データ: ", userData);
 
     }
 
@@ -781,11 +780,18 @@
     /**
      * 学生登録データをLocalStorageへ保存
      * @param {Object} data - 学生登録データ
+     * @returns {number} 現在の登録者数
      **/
     function saveToLocalStorage(data) {
 
       // 学生登録リストを取得する（nullの場合はオブジェクト｛｝）
       let studentList = getFromLocalStorage() ?? {};
+
+      // 新規レコード判定（※特に使用していない）
+      let newRecord = true;
+      if (Object.hasOwn(studentList, data.email)) {
+        newRecord = false;
+      }
 
       // メールアドレスをキーにして、データを追加（または上書き）
       // 例: studentList["taro@example.jp"] = { name: "山田太郎", ... }
@@ -793,6 +799,8 @@
 
       // 文字列に戻して保存
       localStorage.setItem(SAVE_OBJ.key, JSON.stringify(studentList));
+
+      return Object.keys(studentList).length;
 
     }
 
@@ -863,20 +871,33 @@
         deleteResult.error
       );
 
-      addRegistCount();
+      if (deleteResult.error) {
+        return
+      }
+
+      setRegistCount(deleteResult.studentCount);
 
     }
 
     /**
+     */
+
+    /**
      * LocalStorageより削除
-     * キー：メールアドレス
-     **/
+     * @param {string} email - メールアドレス
+     * @returns {{
+     *   error:boolean,
+     *   message:string,
+     *   studentCount:number,
+     * }} 削除結果オブジェクト
+     */
     function deleteFromLocalStorage(email) {
 
       // 削除した結果
       let result = {
         error: false,   // true=エラーあり
         message: '',    // メッセージ
+        studentCount: 0,    // 学生数
       }
 
       // 学生登録リストを取得する
@@ -903,6 +924,7 @@
       localStorage.setItem(SAVE_OBJ.key, JSON.stringify(studentList));
 
       result.message = '登録を削除しました'
+      result.studentCount = Object.keys(studentList).length;
 
       return result;
 
@@ -910,18 +932,12 @@
 
 
     /**
-     * 登録回数のカウント
-     **/
-    function addRegistCount() {
+     * 登録学生数の設定
+     * @param {number} - 加算／減算数
+     */
+    function setRegistCount(studentCount) {
 
-      switch (FORM_OBJ.mode) {
-        case 'N':
-          FORM_OBJ.registCount++;
-          break;
-        case 'D':
-          FORM_OBJ.registCount--;
-          break;
-      }
+      FORM_OBJ.registCount = studentCount;
 
       const registCountDiv = document.getElementById('registCount');
       registCountDiv.innerHTML = "現在の登録者数：「" + FORM_OBJ.registCount + "」人です";
