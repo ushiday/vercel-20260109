@@ -154,6 +154,8 @@
       padding: 4px;
       /* セルの中文字は`左詰め` */
       text-align: left;
+      /* 改行を禁止して1行に強制する */
+      white-space: nowrap;
     }
 
     /* 行の設定 */
@@ -164,6 +166,24 @@
     /* 偶数行の設定 */
     .list-row-even {
       background-color: rgb(250, 253, 255);
+    }
+
+    /* 行№を固定する */
+    .list-table th:first-child,
+    .list-table td:first-child {
+      /* 固定する */
+      position: sticky;
+      /* 左端にくっつける */
+      left: 0;
+      /* データ(z-index:なし)や上部見出し(z-index:10)より前面へ */
+      z-index: 20;
+      background-color: #f8f9fa;
+    }
+
+    /* 左上角のセル（№の見出し）は、上固定と左固定が重なるため、一番前面にする */
+    .list-table th:first-child {
+      /* 最前面 */
+      z-index: 30;
     }
   </style>
 
