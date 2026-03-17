@@ -140,6 +140,16 @@
       /* セルの中文字は`左詰め` */
       text-align: left;
     }
+
+    /* 行の設定 */
+    .list-table tr:hover {
+      background-color: gold;
+    }
+
+    /* 偶数行の設定 */
+    .list-row-even {
+      background-color: rgb(250, 253, 255);
+    }
   </style>
 
 </head>
@@ -246,11 +256,18 @@
           }
         }
 
+        // セル `tdタグ` を1つずつ作成し、データを設定
+        ix++;
+
         // 新しい行を作成
         const row = tbody.insertRow();
 
-        // セル `tdタグ` を1つずつ作成し、データを設定
-        ix++;
+        // 偶数行はストライプ表示
+        row.className = '';
+        if ((ix % 2) === 0) {
+          row.className = 'list-row-even';
+        }
+
 
         // 編集用リンクを作成
         const email = student.email;
