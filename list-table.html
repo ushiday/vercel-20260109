@@ -116,6 +116,15 @@
     /*--------------------------*/
     /* テーブルの設定 */
     /*--------------------------*/
+    .table-container {
+      /* 好きな高さを指定 */
+      max-height: 400px;
+      /* 高さを超えたらスクロールバーを出す */
+      overflow-y: auto;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+
     /* テーブル全体の設定 */
     .list-table {
       width: 100%;
@@ -129,6 +138,12 @@
       background-color: #f8f9fa;
       /* ヘッダーの背景色 */
       font-weight: bold;
+      /* スティッキー（固定）にする */
+      position: sticky;
+      /* 上端にくっつける */
+      top: 0;
+      /* 他のデータよりも上に表示されるようにする */
+      z-index: 10;
     }
 
     /* 見出／項目セルの共通設定 */
@@ -174,25 +189,27 @@
     <button onclick="listTable()">参加者を照会する</button>
 
     <div id="result"></div>
-    <table class='list-table'>
-      <thead>
-        <tr>
-          <th>№</th>
-          <th>名前</th>
-          <th>email</th>
-          <th>学校</th>
-          <th>学部・学科</th>
-          <th>学年</th>
-          <th>興味</th>
-          <th>住所</th>
-          <th>ひとこと</th>
-          <th>懇親会参加</th>
-          <th>登録日時</th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class='list-table'>
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>名前</th>
+            <th>email</th>
+            <th>学校</th>
+            <th>学部・学科</th>
+            <th>学年</th>
+            <th>興味</th>
+            <th>住所</th>
+            <th>ひとこと</th>
+            <th>懇親会参加</th>
+            <th>登録日時</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
