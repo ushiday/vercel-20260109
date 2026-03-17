@@ -30,18 +30,27 @@
     }
 
     label {
-      display: block;
       margin-top: 15px;
       font-weight: bold;
       font-size: 0.9rem;
     }
 
+    input,
+    select,
+    textarea {
+      width: 300px;
+      padding: 10px;
+      margin: 5px 0 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
     .card>button {
       /* width: 100%; */
-
       width: 300px;
       padding: 12px;
-      margin-top: 20px;
+      /* margin-top: 20px; */
       background-color: orange;
       color: #333;
       border: none;
@@ -121,8 +130,11 @@
     <h1>企業向け・学生交流会 参加登録照会（ table ）</h1>
     <p>参加者のリストをテーブル</p>
 
-    <button onclick="listTable()">参加者を照会する</button>
 
+    <label>名前（任意）</label>
+    <input type="text" id="userName" placeholder="全て">
+
+    <button onclick="listTable()">参加者を照会する</button>
 
     <div id="result"></div>
     <table class='list-table'>
@@ -178,10 +190,24 @@
         return;
       }
 
+      // 検査条件の名前を取得
+      const elemName = document.getElementById('userName');
+      const valueName = elemName.value.trim();
+
       const studentList = JSON.parse(currentListJson);
       const students = Object.values(studentList);
       let ix = 0;
       for (student of students) {
+
+        //名前が入力されていたら抽出する
+        if (valueName) {
+          // 入力値が名前に含まれない場合は除外
+          // 文字列①.indexOf(文字列②) = ②が含まれたらその位置。含まない場合は `-1`
+          if (student.name.indexOf(valueName) === -1) {
+            continue;
+          }
+        }
+
         // 新しい行を作成
         const row = tbody.insertRow();
 
