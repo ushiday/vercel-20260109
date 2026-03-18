@@ -191,6 +191,25 @@
       /* 最前面 */
       z-index: 30;
     }
+
+    /*--------------------------*/
+    /* ページネーション */
+    /*--------------------------*/
+    /* ページネーションボタンのスタイル */
+    .page-btn {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      background-color: white;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    /* 現在のページのボタンを強調 */
+    .page-btn.active {
+      background-color: orange;
+      color: white;
+      border-color: orange;
+    }
   </style>
 
 </head>
@@ -215,6 +234,9 @@
     <button onclick="listTable()">参加者を照会する</button>
 
     <div id="result"></div>
+
+    <div id="pagination" style="margin-top: 10px; display: flex; gap: 5px;"></div>
+
     <div class="table-container">
       <table class='list-table'>
         <thead>
@@ -239,12 +261,19 @@
   </div>
 
   <script>
+
+    // 現在のページを管理
+    CONFIG_PAGE = {
+      current: 1,  // 現在のページ
+      rows: 5,     // 1ページあたりの行数
+    }
+
     /**
      * 参加者グリッドを照会する
      * https://github.com/grid-js/gridjs
      * https://gridjs.io/docs
      **/
-    function listTable() {
+    function listTable(page = 1) {
 
       // バリデーションスタイルのクラス名
       const errClassName = 'error';
@@ -279,35 +308,56 @@
       const valueParty = elemParty.value.trim();
 
       const studentList = JSON.parse(currentListJson);
-      const students = Object.values(studentList);
-      let ix = 0;
-      for (student of students) {
+      let students = Object.values(studentList);
 
-        //名前が入力されていたら抽出する
-        if (valueName) {
-          // 入力値が名前に含まれない場合は除外
-          // 文字列①.indexOf(文字列②) = ②が含まれたらその位置。含まない場合は `-1`
-          if (student.name.indexOf(valueName) === -1) {
-            continue;
-          }
-        }
+      // ページネーションを設定
+      CONFIG_PAGE.current = page; // ページ番号を更新
+      const paginationDiv = document.getElementById('pagination');
+      paginationDiv.innerHTML = '';
 
-        //懇親会が選択されていたら抽出する
-        if (valueParty) {
-          if (student.party !== valueParty) {
-            continue;
-          }
-        }
+      // 事前にデータをフィルタリング
+      // 名前の抽出
+      if (valueName) {
+        // students = students.filter(function (student) {
+        //   if (student.name.indexOf(valueName) !== -1) {
+        //     return true
+        //   } else {
+        //     return false
+        //   }
+        // });
+        // ↑上と↓下は同じ意味
+        students = students.filter((student) => {
+          return student.name.indexOf(valueName) !== -1
+        });
+        // students = students.filter(student => student.name.indexOf(valueName) !== -1);
+
+      }
+
+      // 懇親会の抽出
+      if (valueParty) {
+        students = students.filter(s => s.party === valueParty);
+      }
+
+      // --- ページネーション計算 ---
+      const totalRows = students.length;
+      const totalPages = Math.ceil(totalRows / CONFIG_PAGE.rows);
+      // 表示する範囲を決定（例：1ページ目なら 0〜4行目）
+      const pageStart = (CONFIG_PAGE.current - 1) * CONFIG_PAGE.rows;
+      const pageEnd = pageStart + CONFIG_PAGE.rows;
+      const pageStudents = students.slice(pageStart, pageEnd);
+
+      let ix1 = pageStart;
+      for (student of pageStudents) {
 
         // セル `tdタグ` を1つずつ作成し、データを設定
-        ix++;
+        ix1++;
 
         // 新しい行を作成
         const row = tbody.insertRow();
 
         // 偶数行はストライプ表示
         row.className = '';
-        if ((ix % 2) === 0) {
+        if ((ix1 % 2) === 0) {
           row.className = 'list-row-even';
         }
 
@@ -319,7 +369,7 @@
 
         // aタグのHTMLを組み立てる
         // target="_blank" を入れることで「別タブ」で開く
-        const linkIndex = `<a href="${editUrl}" target="_blank">${ix}</a>`;
+        const linkIndex = `<a href="${editUrl}" target="_blank">${ix1}</a>`;
 
         // row.insertCell(0).textContent = ix;                             // №
         row.insertCell(0).innerHTML = linkIndex;                        // №（編集リンク
@@ -336,8 +386,28 @@
 
       }
 
+      // --- ページネーションボタンの作成 ---
+      for (let ix2 = 1; ix2 <= totalPages; ix2++) {
+        // ページ切り替え用ボタンを作成
+        const btn = document.createElement('button');
+        // ページ番号を設定
+        btn.textContent = ix2;
+        // ページボタンのスタイルを設定（※現在は`active` を付与する）
+        btn.className = 'page-btn' + (ix2 === CONFIG_PAGE.current ? ' active' : '');
+
+        // ボタンクリック時にページ指定で描画する
+        btn.onclick = function () {
+          listTable(ix2);
+        }
+        // ↑↓ は同じ意味
+        // btn.onclick = () => listTable(ix2);
+
+        // ページネーションのエリアにボタンを追加する
+        paginationDiv.appendChild(btn);
+      }
+
       resultDiv.className = successClassName;
-      resultDiv.innerHTML = `${ix} 件のデータがありました。`;
+      resultDiv.innerHTML = `${totalRows} 件中 ${pageStart + 1}〜${Math.min(pageEnd, totalRows)} 件を表示中`;
 
     }
 
