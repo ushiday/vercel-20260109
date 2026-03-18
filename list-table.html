@@ -406,8 +406,15 @@
         paginationDiv.appendChild(btn);
       }
 
-      resultDiv.className = successClassName;
-      resultDiv.innerHTML = `${totalRows} 件中 ${pageStart + 1}〜${Math.min(pageEnd, totalRows)} 件を表示中`;
+      // 件数あり
+      if (totalRows > 0) {
+        resultDiv.className = successClassName;
+        resultDiv.innerHTML = `${totalRows} 件中 ${pageStart + 1}〜${Math.min(pageEnd, totalRows)} 件を表示中`;
+        // 件数なし
+      } else {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '指定された条件のデータは存在しませんでした';
+      }
 
     }
 
