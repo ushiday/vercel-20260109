@@ -242,11 +242,11 @@
         <thead>
           <tr>
             <th>№</th>
-            <th>名前</th>
+            <th onclick="sortBy('name')" style="cursor: pointer;">名前<span id="sortIcon_name"></span></th>
             <th>email</th>
             <th>学校</th>
             <th>学部・学科</th>
-            <th>学年</th>
+            <th onclick="sortBy('grade')" style="cursor: pointer;">学年<span id="sortIcon_grade"></span></th>
             <th>興味</th>
             <th>住所</th>
             <th>ひとこと</th>
@@ -266,6 +266,10 @@
     CONFIG_PAGE = {
       current: 1,  // 現在のページ
       rows: 5,     // 1ページあたりの行数
+      sort: {       // ソート（0:解除, 1:昇順, 2:降順
+        name: 0,   // 名前
+        grade: 0,   // 学年
+      },
     }
 
     /**
@@ -309,6 +313,17 @@
 
       const studentList = JSON.parse(currentListJson);
       let students = Object.values(studentList);
+
+      // ソート実行
+      // `sort` 独自実装の関数の返り値が "1" 以上は`before`と`after`の入れ替えをする
+      students.sort((before, after) => {
+        // ソート対象の列を取得する
+        const sortColumns = Object.keys(CONFIG_PAGE.sort);
+        const sortStates = CONFIG_PAGE.sort;
+        // 復号ソートの結果を返す
+        return _sortCompare(before, after, sortColumns, sortStates);
+      });
+
 
       // ページネーションを設定
       CONFIG_PAGE.current = page; // ページ番号を更新
@@ -415,6 +430,83 @@
         resultDiv.className = errClassName;
         resultDiv.innerHTML = '指定された条件のデータは存在しませんでした';
       }
+
+    }
+
+    /**
+     * ソート比較結果を返す
+     **/
+    function _sortCompare(before, after, sortColumns, sortStates) {
+
+      for (const columnName of sortColumns) {
+
+        let leftValue, rightValue;
+
+        const sortState = sortStates[columnName];
+        // 並び指定
+        switch (sortState) {
+          // 解除
+          case 0:
+            continue;
+            break;
+          // 昇順
+          case 1:
+            leftValue = before[columnName];
+            rightValue = after[columnName];
+            break;
+          // 降順
+          case 2:
+            leftValue = after[columnName];
+            rightValue = before[columnName];
+            break;
+        }
+
+        // `localeCompare(比較値,言語)`
+        //    -1:leftが小さい、0:leftと同じ。※この場合`sort`は2つの変数を入れ替えない
+        //     1:leftが大きい※この場合`sort`は2つの変数をの配列順を入れ替える
+        const compare = leftValue.localeCompare(rightValue, 'ja');
+        // 数値では以下のように単純
+        // const compare = leftValue - rightValue
+
+        // 並び順が確定したら終了
+        if (compare !== 0) {
+          return compare;
+        }
+
+      }
+
+      return 0;
+
+    }
+
+    /**
+     * ソート処理を呼び出す
+     **/
+    function sortBy(columnName) {
+
+      const icon = document.getElementById(`sortIcon_${columnName}`);
+
+      // 状態を 0 -> 1 -> 2 -> 0 とループさせる
+      CONFIG_PAGE.sort[columnName] = (CONFIG_PAGE.sort[columnName] + 1) % 3;
+      const sortState = CONFIG_PAGE.sort[columnName];
+
+      // ソート実行
+      switch (sortState) {
+        // 昇順
+        case 1:
+          icon.innerHTML = '🔼';
+          break;
+        // 降順
+        case 2:
+          icon.innerHTML = '🔽';
+          break;
+        // 解除
+        default:
+          icon.innerHTML = '';
+          break;
+      }
+
+      listTable();
 
     }
 
