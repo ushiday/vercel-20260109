@@ -210,6 +210,26 @@
       color: white;
       border-color: orange;
     }
+
+    /*--------------------------*/
+    /* 並び替え */
+    /*--------------------------*/
+    /* onclick 属性を持っている th だけに適用 */
+    .list-table th[onclick] {
+      /* マウスを乗せたら指のマークにする */
+      cursor: pointer;
+      /* クリックできることを色で示す */
+      background-color: #eee;
+      /* 変化を滑らかにする */
+      transition: background 0.3s;
+    }
+
+    /* マウスを乗せた時（ホバー）の演出 */
+    .list-table th[onclick]:hover {
+      /* オレンジ色にして「選べる感」を出す */
+      background-color: orange;
+      color: white;
+    }
   </style>
 
 </head>
@@ -242,16 +262,16 @@
         <thead>
           <tr>
             <th>№</th>
-            <th onclick="sortBy('name')" style="cursor: pointer;">名前<span id="sortIcon_name"></span></th>
-            <th>email</th>
-            <th>学校</th>
-            <th>学部・学科</th>
-            <th onclick="sortBy('grade')" style="cursor: pointer;">学年<span id="sortIcon_grade"></span></th>
+            <th onclick="sortBy(this,'name')">名前</th>
+            <th onclick="sortBy(this,'email')">email</th>
+            <th onclick="sortBy(this,'university')">学校</th>
+            <th onclick="sortBy(this,'department')">学部・学科</th>
+            <th onclick="sortBy(this,'grade')">学年</th>
             <th>興味</th>
-            <th>住所</th>
-            <th>ひとこと</th>
-            <th>懇親会参加</th>
-            <th>登録日時</th>
+            <th onclick="sortBy(this,'address')">住所</th>
+            <th onclick="sortBy(this,'message')">ひとこと</th>
+            <th onclick="sortBy(this,'party')">懇親会参加</th>
+            <th onclick="sortBy(this,'updatedAt')">登録日時</th>
           </tr>
         </thead>
         <tbody id="table-body">
@@ -266,9 +286,8 @@
     CONFIG_PAGE = {
       current: 1,  // 現在のページ
       rows: 5,     // 1ページあたりの行数
-      sort: {       // ソート（0:解除, 1:昇順, 2:降順
-        name: 0,   // 名前
-        grade: 0,   // 学年
+      sort: {
+        // 'カラム名': 0, // ソート状態（0:解除, 1:昇順, 2:降順
       },
     }
 
@@ -482,13 +501,20 @@
     /**
      * ソート処理を呼び出す
      **/
-    function sortBy(columnName) {
+    function sortBy(elem, columnName) {
 
-      const icon = document.getElementById(`sortIcon_${columnName}`);
+      // th 内に内包されている`span`を取得する
+      let icon = elem.querySelector('span');
+      // 初めての場合は”アイコン用”エリアを作成する
+      if (!icon) {
+        icon = document.createElement('span');
+        elem.appendChild(icon);
+      }
 
       // 状態を 0 -> 1 -> 2 -> 0 とループさせる
-      CONFIG_PAGE.sort[columnName] = (CONFIG_PAGE.sort[columnName] + 1) % 3;
-      const sortState = CONFIG_PAGE.sort[columnName];
+      let sortState = CONFIG_PAGE.sort[columnName] || 0;
+      sortState = (sortState + 1) % 3;
+      CONFIG_PAGE.sort[columnName] = sortState
 
       // ソート実行
       switch (sortState) {
