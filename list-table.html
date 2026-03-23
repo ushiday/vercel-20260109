@@ -480,10 +480,17 @@
             break;
         }
 
-        // `localeCompare(比較値,言語)`
-        //    -1:leftが小さい、0:leftと同じ。※この場合`sort`は2つの変数を入れ替えない
-        //     1:leftが大きい※この場合`sort`は2つの変数をの配列順を入れ替える
-        const compare = leftValue.localeCompare(rightValue, 'ja');
+        let compare;
+
+        // 日時の場合の比較は `Date` で日付型に戻す。
+        if (columnName === 'updatedAt') {
+          compare = new Date(leftValue) - new Date(rightValue);
+        } else {
+          // `localeCompare(比較値,言語)`
+          //    -1:leftが小さい、0:leftと同じ。※この場合`sort`は2つの変数を入れ替えない
+          //     1:leftが大きい※この場合`sort`は2つの変数をの配列順を入れ替える
+          compare = leftValue.localeCompare(rightValue, 'ja');
+        }
         // 数値では以下のように単純
         // const compare = leftValue - rightValue
 
