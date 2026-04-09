@@ -166,8 +166,6 @@
 
       console.log('日付範囲', dateStart, dateEnd);
 
-      //TODO 日付チェック
-
       // バリデーションスタイルのクラス名
       const errClassName = 'error';
       const successClassName = 'success';
@@ -177,6 +175,14 @@
 
       resultDiv.innerHTML = "";
       resultDiv.className = "";
+
+      // 日付チェック
+      if (dateStart && dateEnd
+        && dateStart > dateEnd) {
+        resultDiv.className = errClassName;
+        resultDiv.innerHTML = '日付範囲が正しくありません。（逆転している）';
+        return;
+      }
 
       // LocalStorageから名簿データを取得
       const storageKey = 'student_list';
@@ -213,19 +219,7 @@
 
       // タイトルの設定
       doc.setFontSize(REPORT_FONT.SIZE);
-      // doc.text('学生交流会登録・報告リスト', 20, 20);
-
-      // 開始／終了日を印字
-      if (dateStart) {
-        doc.text(`${dateStart} ～ `, 40, 20);
-        // doc.text('ほげほげランド', 20, 21);
-        // doc.text('学生交流会登録・報告リスト', 20, 20);
-        console.log('開始日付', dateStart);
-      }
-      if (dateEnd) {
-        doc.text(dateEnd, 20, 60);
-        console.log('終了日付', dateEnd);
-      }
+      doc.text('学生交流会登録・報告リスト', 20, 20);
 
 
       const students = Object.values(studentList);
